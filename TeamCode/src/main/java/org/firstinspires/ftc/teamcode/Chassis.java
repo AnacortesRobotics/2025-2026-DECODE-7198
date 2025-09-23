@@ -7,10 +7,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 
 import java.util.Locale;
 
-public class Chassis {
+public class Chassis implements Subsystem {
+
+    private PIDCoefficients pidCoefficients;
 
     private DcMotor leftFront;
     private DcMotor rightFront;
@@ -22,6 +25,10 @@ public class Chassis {
 
     private GoBildaPinpointDriver odo;
     private Telemetry telemetry;
+
+    public PIDController pidForward = new PIDController(pidCoefficients.XP, pidCoefficients.XI, pidCoefficients.XD);
+    public PIDController pidHorizontal = new PIDController(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
+    public PIDController pidRotate = new PIDController(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
 
     public void init(HardwareMap hMap, Telemetry telemetry) {
         leftFront = hMap.get(DcMotor.class, "frontLeft");
@@ -44,6 +51,8 @@ public class Chassis {
 
         odo.resetPosAndIMU();
 
+        pidHorizontal.setInverted(true);
+
         this.telemetry = telemetry;
     }
 
@@ -64,7 +73,7 @@ public class Chassis {
     }
 
     public void mecanumDriveFieldCentric(double vertical, double horizontal, double rotate) {
-        double heading = -odo.getHeading(AngleUnit.DEGREES);
+        double heading = -odo.getHeading(AngleUnit.RADIANS);
         double robotVert = Math.sin(heading) * horizontal + Math.cos(heading) * vertical;
         double robotHoriz = Math.cos(heading) * horizontal - Math.sin(heading) * vertical;
         mecanumDrive(robotVert, robotHoriz, rotate);
@@ -79,5 +88,38 @@ public class Chassis {
     public Pose2D getPose() {
         return odo.getPosition();
     }
+
+    public void setTarget(Pose2D target) {
+        pidForward.setTarget(target.getX(DistanceUnit.INCH));
+        pidHorizontal.setTarget(target.getY(DistanceUnit.INCH));
+        pidRotate.setTarget(target.getHeading(AngleUnit.DEGREES));
+    }
+
+    public boolean isAtTarget() {
+        return Math.abs(odo.getPosition().getX(DistanceUnit.INCH) - pidForward.getTarget()) < .5 &&
+                Math.abs(odo.getPosition().getY(DistanceUnit.INCH) - pidHorizontal.getTarget()) < .5 &&
+                Math.abs(odo.getPosition().getHeading(AngleUnit.DEGREES) - pidRotate.getTarget()) < 2;
+    }
+
+    public void update() {
+        mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
+                pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
+                pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES))
+                );
+    }
+
+    public void stop() {
+        pidForward.stop();
+        pidHorizontal.stop();
+        pidRotate.stop();
+        mecanumDriveFieldCentric(0, 0, 0);
+    }
+
+    public void setPidCoefficients() {
+        pidForward.updatePIDCoefficients(pidCoefficients.XP, pidCoefficients.XI, pidCoefficients.XD);
+        pidHorizontal.updatePIDCoefficients(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
+        pidRotate.updatePIDCoefficients(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
+    }
+
 
 }

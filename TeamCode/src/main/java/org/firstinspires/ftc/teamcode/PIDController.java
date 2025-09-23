@@ -11,6 +11,8 @@ public class PIDController {
     private long lastTime = 0;
     private double integral = 0;
 
+    private boolean isInverted = false;
+
     public PIDController(double kP, double kI, double kD) {
         this.kP = kP;
         this.kI = kI;
@@ -19,6 +21,10 @@ public class PIDController {
 
     public void setTarget(double target) {
         this.target = target;
+    }
+
+    public double getTarget() {
+        return target;
     }
 
     public double update(double current) {
@@ -36,7 +42,7 @@ public class PIDController {
         lastError = error;
         lastTime = System.currentTimeMillis();
 
-        return (error * kP) + (integral * kI) + (derivative * kD);
+        return (isInverted ? -1 : 1) * ((error * kP) + (integral * kI) + (derivative * kD));
     }
 
     public void stop() {
@@ -44,5 +50,19 @@ public class PIDController {
         lastTime = 0;
         integral = 0;
     }
+
+    public void setInverted(boolean invert) {
+        isInverted = invert;
+    }
+
+    public void updatePIDCoefficients(double kP, double kI, double kD) {
+        this.kP = kP;
+        this.kI = kI;
+        this.kD = kD;
+    }
+
+//    public double clampOutput(double unbounded) {
+//        return Math.min(Math.max(unbounded, minOutput), maxOutput);
+//    }
 
 }
