@@ -7,6 +7,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Commands.Command;
+import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 
 import java.util.Locale;
@@ -79,7 +81,7 @@ public class Chassis implements Subsystem {
         mecanumDrive(robotVert, robotHoriz, rotate);
     }
 
-    public void updateOdo() {
+    private void updateOdo() {
         odo.update();
         String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", odo.getPosition().getX(DistanceUnit.INCH), odo.getPosition().getY(DistanceUnit.INCH), odo.getPosition().getHeading(AngleUnit.DEGREES));
         telemetry.addData("True Position (Raw odo values)", data);
@@ -89,23 +91,33 @@ public class Chassis implements Subsystem {
         return odo.getPosition();
     }
 
-    public void setTarget(Pose2D target) {
+    private void setTarget(Pose2D target) {
         pidForward.setTarget(target.getX(DistanceUnit.INCH));
         pidHorizontal.setTarget(target.getY(DistanceUnit.INCH));
         pidRotate.setTarget(target.getHeading(AngleUnit.DEGREES));
     }
 
-    public boolean isAtTarget() {
+    private boolean isAtTarget() {
         return Math.abs(odo.getPosition().getX(DistanceUnit.INCH) - pidForward.getTarget()) < .5 &&
                 Math.abs(odo.getPosition().getY(DistanceUnit.INCH) - pidHorizontal.getTarget()) < .5 &&
                 Math.abs(odo.getPosition().getHeading(AngleUnit.DEGREES) - pidRotate.getTarget()) < 2;
     }
 
-    public void update() {
+    private void update() {
+        updateOdo();
         mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
                 pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
                 pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES))
                 );
+    }
+
+    public Command driveToPosition(Pose2D target) {
+        return new FunctionalCommand(
+                ()->setTarget(target),
+                this::update,
+                (interrupted)->stop(),
+                this::isAtTarget,
+                this);
     }
 
     public void stop() {

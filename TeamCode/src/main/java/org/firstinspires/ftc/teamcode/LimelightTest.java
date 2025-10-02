@@ -39,7 +39,7 @@ public class LimelightTest extends OpMode {
         strafe = gamepad1.left_stick_x;
         rotate = -gamepad1.right_stick_x;
 
-        chassis.updateOdo();
+        //chassis.updateOdo();
 
         chassis.mecanumDriveFieldCentric(forward, strafe, rotate);
 

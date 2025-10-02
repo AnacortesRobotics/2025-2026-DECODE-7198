@@ -9,6 +9,10 @@ public abstract class Command {
 
     private final Set<Subsystem> requirements = new HashSet<>();
 
+    private boolean interruptable = false;
+
+    private String name = "unnamed";
+
     public void init() {}
 
     public void run() {}
@@ -17,12 +21,14 @@ public abstract class Command {
 
     public boolean isFinished() {return false;}
 
-    public void addRequirements(Subsystem... subsystems) {
+    public Command addRequirements(Subsystem... subsystems) {
         requirements.addAll(Arrays.asList(subsystems));
+        return this;
     }
 
-    public void addRequirements(Collection<Subsystem> subsystems) {
+    public Command addRequirements(Collection<Subsystem> subsystems) {
         requirements.addAll(subsystems);
+        return this;
     }
 
     public Set<Subsystem> getRequirements() {
@@ -35,6 +41,24 @@ public abstract class Command {
 
     public SequentialCommandGroup andThen(Runnable toRun, Subsystem... requirements) {
         return andThen(new InstantCommand(toRun, requirements));
+    }
+
+    public Command setInterruptable(boolean interruptable) {
+        this.interruptable = interruptable;
+        return this;
+    }
+
+    public boolean isInterruptable() {
+        return interruptable;
+    }
+
+    public Command setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getName() {
+        return name;
     }
 
 }
