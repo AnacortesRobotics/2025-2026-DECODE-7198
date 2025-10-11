@@ -24,20 +24,18 @@ public class AutoTest extends OpMode {
 //    public static double xDistance = 16;
 //    public static double yDistance = 0;
 //    public static double rDistance = 0;
-//
-//    @Override
+
+    @Override
     public void init() {
-//
+
 //        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 //
-//        chassis = new Chassis();
-//
-//        chassis.init(hardwareMap, telemetry);
+//        chassis = new Chassis(hardwareMap, telemetry);
 //
 //        chassis.setTarget(new Pose2D(DistanceUnit.INCH, xDistance, yDistance, AngleUnit.DEGREES, rDistance));
     }
-//
-//    @Override
+
+    @Override
     public void loop() {
 //
 //        if (System.currentTimeMillis() < timeToLeave) {
@@ -61,6 +59,6 @@ public class AutoTest extends OpMode {
 //            stage = !stage;
 //        }
 //        chassis.updateOdo();
-//
+
     }
 }

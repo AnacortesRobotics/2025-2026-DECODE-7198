@@ -2,57 +2,37 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 
 @Autonomous
 public class CommandTest extends OpMode {
 
-    private RgbLed ledController;
-    private Command blinkSage;
-    private Command blinkRed;
-
     private CommandScheduler commandScheduler;
-
-    private Launcher launcher;
-
-    private double launcherPower = 0;
+    private Chassis chassis;
 
     @Override
     public void init() {
-        ledController = new RgbLed();
-        ledController.init(hardwareMap, telemetry);
+        chassis = new Chassis(hardwareMap, telemetry);
 
-        launcher.init(hardwareMap, telemetry);
+        commandScheduler = CommandScheduler.getInstance();
+        commandScheduler.init(telemetry);
 
-//        blinkSage = ledController.blink(500, RgbLed.Color.SAGE, "Blink sage");
-//
-//        blinkRed = ledController.blink(500, RgbLed.Color.RED, "Blink red");
-//
-//        commandScheduler = CommandScheduler.getInstance();
-//
-//        commandScheduler.init(telemetry);
-//
-//        commandScheduler.schedule(blinkSage, blinkRed);
+        commandScheduler.schedule(chassis.driveTrajectory(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0),
+                new Pose2D(DistanceUnit.INCH, 24, 0, AngleUnit.DEGREES, 0),
+                new Pose2D(DistanceUnit.INCH, 24, 24, AngleUnit.DEGREES, 90),
+                new Pose2D(DistanceUnit.INCH, 48, 48, AngleUnit.DEGREES, 90)
+        ));
+        chassis.setMaxSpeed(.4);
     }
 
     @Override
     public void loop() {
-//        if (gamepad1.right_trigger > .5) {
-//            commandScheduler.schedule(launcher.loadBall());
-//        } else if (gamepad1.dpad_up) {
-//            launcherPower += .25;
-//            commandScheduler.schedule(launcher.chargeLauncher(launcherPower));
-//        } else if (gamepad1.dpad_down) {
-//            launcherPower -= .25;
-//            commandScheduler.schedule(launcher.chargeLauncher(launcherPower));
-//        } else if (gamepad1.b) {
-//            commandScheduler.schedule(launcher.chargeLauncher(0));
-//        }
 
-
-
-
+        chassis.updateTelemetry();
         commandScheduler.run();
         commandScheduler.updateTelemetry();
     }

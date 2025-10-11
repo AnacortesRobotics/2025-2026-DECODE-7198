@@ -16,6 +16,7 @@ import java.util.Locale;
 public class Chassis implements Subsystem {
 
     private PIDCoefficients pidCoefficients;
+    private LinearTrajectory trajectory;
 
     private DcMotor leftFront;
     private DcMotor rightFront;
@@ -32,7 +33,7 @@ public class Chassis implements Subsystem {
     public PIDController pidHorizontal = new PIDController(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
     public PIDController pidRotate = new PIDController(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
 
-    public void init(HardwareMap hMap, Telemetry telemetry) {
+    public Chassis(HardwareMap hMap, Telemetry telemetry) {
         leftFront = hMap.get(DcMotor.class, "frontLeft");
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         rightFront = hMap.get(DcMotor.class, "frontRight");
@@ -56,6 +57,9 @@ public class Chassis implements Subsystem {
         pidHorizontal.setInverted(true);
 
         this.telemetry = telemetry;
+
+        updateOdo();
+        trajectory = new LinearTrajectory(telemetry, odo.getPosition());
     }
 
     public void mecanumDrive(double forward, double strafe, double rotate) {
@@ -111,13 +115,35 @@ public class Chassis implements Subsystem {
                 );
     }
 
+    private void updateTrajectory() {
+        updateOdo();
+        setTarget(trajectory.getLookaheadPoint(odo.getPosition(), 6));
+        mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
+                pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
+                pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES)));
+
+    }
+
+    public void setPath(Pose2D... pose) {
+        trajectory = new LinearTrajectory(telemetry, pose);
+    }
+
     public Command driveToPosition(Pose2D target) {
         return new FunctionalCommand(
                 ()->setTarget(target),
                 this::update,
                 (interrupted)->stop(),
                 this::isAtTarget,
-                this);
+                this).setName("Drive to position");
+    }
+
+    public Command driveTrajectory(Pose2D... path) {
+        return new FunctionalCommand(
+                ()-> setPath(path),
+                this::updateTrajectory,
+                (interrupted)->stop(),
+                this::isAtTarget,
+                this).setName("Drive trajectory");
     }
 
     public void stop() {
@@ -133,5 +159,14 @@ public class Chassis implements Subsystem {
         pidRotate.updatePIDCoefficients(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
     }
 
+    public void setMaxSpeed(double speed) {
+        maxSpeed = speed;
+    }
+
+    public void updateTelemetry() {
+        trajectory.updateTelemetry();
+        telemetry.addData("Target point", pidForward.getTarget() + ", " + pidHorizontal.getTarget() + ", " + pidRotate.getTarget());
+
+    }
 
 }
