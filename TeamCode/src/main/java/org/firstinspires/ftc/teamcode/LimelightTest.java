@@ -5,6 +5,9 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import java.util.List;
 
@@ -14,6 +17,7 @@ public class LimelightTest extends OpMode {
     //private Limelight3A limelight;
 
     private Chassis chassis;
+    private LinearTrajectory linearTrajectory;
 
     private double forward;
     private double strafe;
@@ -24,8 +28,11 @@ public class LimelightTest extends OpMode {
         //limelight = hardwareMap.get(Limelight3A.class, "limelight");
         //limelight.pipelineSwitch(0);
 
-        chassis = new Chassis();
-        chassis.init(hardwareMap, telemetry, true);
+        chassis = new Chassis(hardwareMap, telemetry, true);
+        linearTrajectory = new LinearTrajectory(telemetry,
+                new Pose2D(DistanceUnit.INCH, -10, 0, AngleUnit.DEGREES, 0),
+                new Pose2D(DistanceUnit.INCH, 10, 0, AngleUnit.DEGREES, 0)
+                );
     }
 
     @Override
@@ -39,9 +46,9 @@ public class LimelightTest extends OpMode {
         strafe = gamepad1.left_stick_x;
         rotate = -gamepad1.right_stick_x;
 
-        //chassis.updateOdo();
-
         chassis.mecanumDriveFieldCentric(forward, strafe, rotate);
+
+        telemetry.addData("Target point", linearTrajectory.getLookaheadPoint(chassis.getPose(), 8));
 
 //        LLResult result = limelight.getLatestResult();
 //        List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
