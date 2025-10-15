@@ -14,7 +14,7 @@ public class CommandTest extends OpMode {
 
     private CommandScheduler commandScheduler;
 
-    private Launcher launcher;
+    private LauncherOld launcher;
 
     private double launcherPower = 0;
 

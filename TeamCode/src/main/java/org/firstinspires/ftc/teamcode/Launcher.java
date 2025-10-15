@@ -1,71 +1,97 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Commands.*;
+import org.firstinspires.ftc.teamcode.Commands.Command;
+import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
+import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 
 public class Launcher implements Subsystem {
-
-    private DcMotor leftMotor;
-    private DcMotor rightMotor;
-
-    private CRServo leftServo;
-    private CRServo rightServo;
-
+    private PIDController pidL;
+    private PIDController pidR;
+    private DcMotorEx leftMotor;
+    private DcMotorEx rightMotor;
     private Telemetry telemetry;
+    private double targetRPM = 0;
 
-    private Loader loader;
-    private Shooter shooter;
 
-    public void init(HardwareMap hMap, Telemetry telemetry) {
+    private final int TICKS_PER_REVOLUTION = 28;
+    private boolean isSpinningFlag = false;
+
+    public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        leftMotor = hMap.get(DcMotor.class, "leftMotor");
+        pidL = new PIDController(0.002,0,0);
+        pidR = new PIDController(0.002,0,0);
+        leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightMotor = hMap.get(DcMotor.class, "rightMotor");
-
-        leftServo = hMap.get(CRServo.class, "leftServo");
-        rightServo = hMap.get(CRServo.class, "rightServo");
-        rightServo.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
+        rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         this.telemetry = telemetry;
-
-        loader = new Loader();
-        shooter = new Shooter();
     }
-
-    public Command loadBall() {
-
-        return new SequentialCommandGroup(
-                new InstantCommand(()->loader.setServoPower(1), loader),
-                new WaitCommand(1000),
-                new InstantCommand(()->loader.setServoPower(0), loader)
-        ).setInterruptable(true);
+    public void setPower(double power){
+        rightMotor.setPower(power);
+        leftMotor.setPower(power);
     }
-
     public Command chargeLauncher(double power) {
         return new InstantCommand(
-                ()->shooter.setMotorPower(power),
-                shooter
+                () -> setPower(power)
         ).setInterruptable(true);
     }
-
-    public class Loader implements Subsystem {
-
-        private void setServoPower(double power) {
-            leftServo.setPower(power);
-            rightServo.setPower(power);
-        }
+    private void setTargetRPM(double rpm){
+        pidL.setTarget(rpm);
+        pidR.setTarget(rpm);
+        targetRPM = rpm;
     }
-
-    public class Shooter implements Subsystem {
-
-        private void setMotorPower(double power) {
-            leftMotor.setPower(power);
-            rightMotor.setPower(power);
+    private void update(){
+        double leftrpm = getCurrentRPM(LauncherWheel.LEFT);
+        leftMotor.setPower(pidL.update(leftrpm));
+        double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
+        rightMotor.setPower(pidR.update(rightrpm));
+        isSpinningFlag = true;
+    }
+    public enum LauncherWheel {
+        LEFT,
+        RIGHT
+    }
+    public double getCurrentRPM(LauncherWheel wheel){
+        switch(wheel){
+            case LEFT:
+                return 60*leftMotor.getVelocity()/TICKS_PER_REVOLUTION;
+            case RIGHT:
+                return 60*rightMotor.getVelocity()/TICKS_PER_REVOLUTION;
         }
+        return 0;
+    }
+    public boolean isSpinning(){
+        return isSpinningFlag;
+    }
+    public void stopPid() {
+        isSpinningFlag = false;
+        pidL.stop();
+        pidR.stop();
+        setPower(0);
+    }
+    public Command start(){
+        return new FunctionalCommand(
+                ()->setTargetRPM(targetRPM),
+                this::update,
+                (interrupted)->{},
+                ()->false,
+                this).setInterruptable(true);
+    }
+    public Command setRPM(double rpm){
+        return new InstantCommand(()->setTargetRPM(rpm));
+    }
+    public Command adjustRPM(double increment){
+        return new InstantCommand(
+                ()->setTargetRPM(targetRPM + increment));
+    }
+    public Command stop(){
+        return new InstantCommand(()->stopPid(),this);
     }
 
 }

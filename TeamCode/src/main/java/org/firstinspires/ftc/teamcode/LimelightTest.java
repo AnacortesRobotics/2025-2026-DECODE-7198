@@ -25,7 +25,7 @@ public class LimelightTest extends OpMode {
         //limelight.pipelineSwitch(0);
 
         chassis = new Chassis();
-        chassis.init(hardwareMap, telemetry);
+        chassis.init(hardwareMap, telemetry, true);
     }
 
     @Override

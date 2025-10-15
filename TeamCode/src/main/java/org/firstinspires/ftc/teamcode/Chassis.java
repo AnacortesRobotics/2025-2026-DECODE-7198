@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -32,27 +33,30 @@ public class Chassis implements Subsystem {
     public PIDController pidHorizontal = new PIDController(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
     public PIDController pidRotate = new PIDController(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
 
-    public void init(HardwareMap hMap, Telemetry telemetry) {
+    public void init(HardwareMap hMap, Telemetry telemetry, boolean useOdo) {
         leftFront = hMap.get(DcMotor.class, "frontLeft");
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
         rightFront = hMap.get(DcMotor.class, "frontRight");
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack = hMap.get(DcMotor.class, "backLeft");
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightBack = hMap.get(DcMotor.class, "backRight");
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        odo = hMap.get(GoBildaPinpointDriver.class,"odo");
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        odo.setOffsets(461/64.0, 147/32.0, DistanceUnit.INCH);
+        if (useOdo) {
+            odo = hMap.get(GoBildaPinpointDriver.class, "odo");
+            odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+            odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                    GoBildaPinpointDriver.EncoderDirection.REVERSED);
+            odo.setOffsets(461 / 64.0, 147 / 32.0, DistanceUnit.INCH);
 
-        odo.resetPosAndIMU();
-
+            odo.resetPosAndIMU();
+        }
         pidHorizontal.setInverted(true);
 
         this.telemetry = telemetry;
