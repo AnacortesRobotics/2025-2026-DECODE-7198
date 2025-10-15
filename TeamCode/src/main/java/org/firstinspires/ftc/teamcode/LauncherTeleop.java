@@ -27,9 +27,7 @@ public class LauncherTeleop extends OpMode {
         commandScheduler = CommandScheduler.getInstance();
 
         commandScheduler.init(this);
-        chassis = new Chassis();
-        chassis.init(hardwareMap, telemetry, false);
-
+        chassis = new Chassis(hardwareMap, telemetry, false);
 
         commandScheduler
                 .getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY)
