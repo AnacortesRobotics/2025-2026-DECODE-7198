@@ -16,13 +16,13 @@ public class InputState {
         this.threshold = threshold;
     }
     public InputState(double value,double lastValue){
-        this(value, lastValue, 0);
+        this(value, lastValue, 0.5);
     }
     public InputState(boolean value, boolean lastValue){
         this.value = (value ? 1:0);
         this.lastValue = (lastValue ? 1:0);
         this.inputType = (InputType.DIGITAL);
-        this.threshold = 0;
+        this.threshold = 1;
     }
     public boolean isPressed(){
         return value>=threshold;

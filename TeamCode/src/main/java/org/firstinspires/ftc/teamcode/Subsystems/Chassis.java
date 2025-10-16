@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -10,13 +9,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
+import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
+import org.firstinspires.ftc.teamcode.LinearTrajectory;
+import org.firstinspires.ftc.teamcode.PIDController;
 
 import java.util.Locale;
+import java.util.function.DoubleSupplier;
 
 public class Chassis implements Subsystem {
 
-    private PIDCoefficients pidCoefficients;
     private LinearTrajectory trajectory;
 
     private DcMotor leftFront;
@@ -30,19 +33,20 @@ public class Chassis implements Subsystem {
     private GoBildaPinpointDriver odo;
     private Telemetry telemetry;
 
-    public PIDController pidForward = new PIDController(pidCoefficients.XP, pidCoefficients.XI, pidCoefficients.XD);
-    public PIDController pidHorizontal = new PIDController(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
-    public PIDController pidRotate = new PIDController(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
+    public PIDController pidForward = new PIDController(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD);
+    public PIDController pidHorizontal = new PIDController(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD);
+    public PIDController pidRotate = new PIDController(PIDCoefficients.RP, PIDCoefficients.RI, PIDCoefficients.RD);
 
     public Chassis(HardwareMap hMap, Telemetry telemetry, boolean useOdo) {
+
         leftFront = hMap.get(DcMotor.class, "frontLeft");
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
         rightFront = hMap.get(DcMotor.class, "frontRight");
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
         leftBack = hMap.get(DcMotor.class, "backLeft");
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
         rightBack = hMap.get(DcMotor.class, "backRight");
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -89,7 +93,7 @@ public class Chassis implements Subsystem {
         mecanumDrive(robotVert, robotHoriz, rotate);
     }
 
-    private void updateOdo() {
+    public void updateOdo() {
         odo.update();
         String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", odo.getPosition().getX(DistanceUnit.INCH), odo.getPosition().getY(DistanceUnit.INCH), odo.getPosition().getHeading(AngleUnit.DEGREES));
         telemetry.addData("True Position (Raw odo values)", data);
@@ -112,7 +116,6 @@ public class Chassis implements Subsystem {
     }
 
     private void update() {
-        updateOdo();
         mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
                 pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
                 pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES))
@@ -120,7 +123,6 @@ public class Chassis implements Subsystem {
     }
 
     private void updateTrajectory() {
-        updateOdo();
         setTarget(trajectory.getLookaheadPoint(odo.getPosition(), 6));
         mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
                 pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
@@ -150,6 +152,36 @@ public class Chassis implements Subsystem {
                 this).setName("Drive trajectory");
     }
 
+    private double getAnglefromPoint(Pose2D target) {
+        double xDif = target.getX(DistanceUnit.INCH) - odo.getPosX(DistanceUnit.INCH);
+        double yDif = target.getY(DistanceUnit.INCH) - odo.getPosY(DistanceUnit.INCH);
+        double targetAngle = Math.atan2(yDif, xDif) * 180 / Math.PI;
+        if (targetAngle > 180) {
+            targetAngle -= 360;
+        } else if (targetAngle <= -180) {
+            targetAngle += 360;
+        }
+        return targetAngle;
+    }
+
+    public Command autoTurn(DoubleSupplier forward, DoubleSupplier strafe, Pose2D target) {
+        return new FunctionalCommand(()->{},
+        ()->{
+            double targetAngle = getAnglefromPoint(target);
+            if (targetAngle - odo.getHeading(AngleUnit.DEGREES) > 180) {
+                targetAngle -= 360;
+            } else if (targetAngle - odo.getHeading(AngleUnit.DEGREES) < -180) {
+                targetAngle += 360;
+            }
+            pidRotate.setTarget(targetAngle);
+            mecanumDriveFieldCentric(forward.getAsDouble(), strafe.getAsDouble(),
+                 pidRotate.update(odo.getHeading(AngleUnit.DEGREES)));
+            },
+            (interrupted)->{},
+            ()->false,
+            this).setInterruptable(true);
+    }
+
     public void stop() {
         pidForward.stop();
         pidHorizontal.stop();
@@ -158,9 +190,9 @@ public class Chassis implements Subsystem {
     }
 
     public void setPidCoefficients() {
-        pidForward.updatePIDCoefficients(pidCoefficients.XP, pidCoefficients.XI, pidCoefficients.XD);
-        pidHorizontal.updatePIDCoefficients(pidCoefficients.YP, pidCoefficients.YI, pidCoefficients.YD);
-        pidRotate.updatePIDCoefficients(pidCoefficients.RP, pidCoefficients.RI, pidCoefficients.RD);
+        pidForward.updatePIDCoefficients(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD);
+        pidHorizontal.updatePIDCoefficients(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD);
+        pidRotate.updatePIDCoefficients(PIDCoefficients.RP, PIDCoefficients.RI, PIDCoefficients.RD);
     }
 
     public void setMaxSpeed(double speed) {

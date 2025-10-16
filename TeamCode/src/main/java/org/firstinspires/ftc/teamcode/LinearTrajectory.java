@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public class LinearTrajectory implements Trajectory {
+public class LinearTrajectory {
 
     private Pose2D[] trajectoryPoints;
 
@@ -25,7 +25,7 @@ public class LinearTrajectory implements Trajectory {
     private Telemetry telemetry;
 
     public LinearTrajectory(Telemetry telemetry, Pose2D... points) {
-        queueTargetPoints(points);  // if this doesn't work, feed it each individual point
+        queueTargetPoints(points);
         this.telemetry = telemetry;
 
         if (trajectoryPoints.length == 1) {
@@ -45,7 +45,6 @@ public class LinearTrajectory implements Trajectory {
 
     }
 
-    @Override
     public Pose2D getLookaheadPoint(Pose2D currentPose, double lookAheadInches) {
         if (trajectoryPoints.length <= 1) {
             return targetPoint;
