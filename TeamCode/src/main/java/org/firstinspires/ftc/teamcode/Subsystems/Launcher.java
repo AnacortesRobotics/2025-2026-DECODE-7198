@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -9,6 +8,7 @@ import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
+import org.firstinspires.ftc.teamcode.PIDController;
 
 public class Launcher implements Subsystem {
     private PIDController pidL;
@@ -24,8 +24,8 @@ public class Launcher implements Subsystem {
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.002,0,0);
-        pidR = new PIDController(0.002,0,0);
+        pidL = new PIDController(0.008,0,0, false);
+        pidR = new PIDController(0.008,0,0, false);
         leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
@@ -91,7 +91,12 @@ public class Launcher implements Subsystem {
                 ()->setTargetRPM(targetRPM + increment));
     }
     public Command stop(){
-        return new InstantCommand(()->stopPid(),this);
+        return new InstantCommand(this::stopPid,this);
+    }
+
+    public void updateTelemetry() {
+        telemetry.addData("Left wheel rpm", getCurrentRPM(LauncherWheel.LEFT));
+        telemetry.addData("Right wheel rpm", getCurrentRPM(LauncherWheel.RIGHT));
     }
 
 }

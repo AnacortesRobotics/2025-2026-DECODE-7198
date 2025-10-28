@@ -39,6 +39,7 @@ public class CommandScheduler {
 
     private Telemetry telemetry;
 
+    private OpMode opMode;
     private Gamepad gamepad1;
     private Gamepad gamepad2;
     private Gamepad lastGamepad1;
@@ -58,6 +59,7 @@ public class CommandScheduler {
     }
 
     public void init(OpMode opMode) {
+        this.opMode = opMode;
         this.telemetry = opMode.telemetry;
         this.gamepad1 = opMode.gamepad1;
         this.gamepad2 = opMode.gamepad2;
@@ -138,8 +140,10 @@ public class CommandScheduler {
     }
 
     public void run() {
-        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty() && defaultCommands.isEmpty() && gamepad1Triggers.isEmpty() && gamepad2Triggers.isEmpty()) {return;}
-        this.telemetry.addData("after test of empty commands in CommandScheduler: ", "world");
+        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty() && defaultCommands.isEmpty()) {return;}
+
+        gamepad1 = opMode.gamepad1;
+        gamepad2 = opMode.gamepad2;
 
         Iterator<Command> commandIterator = scheduledCommands.iterator();
         while (commandIterator.hasNext()) {
@@ -172,8 +176,8 @@ public class CommandScheduler {
             }
         }
 
-        for (Command defaultCommand:defaultCommands) {
-            if (getActiveConflicts(defaultCommand).size()==0){
+        for (Command defaultCommand: defaultCommands) {
+            if (getActiveConflicts(defaultCommand).isEmpty()){
                 for (Subsystem requirement : defaultCommand.getRequirements()) {
                     activeSubsystems.put(requirement, defaultCommand);
                 }
@@ -182,11 +186,15 @@ public class CommandScheduler {
             }
         }
 
+        Set<Command> commandsToEnd = new HashSet<>();
         for (Command command : activeCommands) {
             command.run();
             if (command.isFinished()) {
-                endCommand(command, false);
+                commandsToEnd.add(command);
             }
+        }
+        for (Command command : commandsToEnd) {
+            endCommand(command, false);
         }
         for (GamepadInput input : gamepad1Triggers.keySet()){
             Trigger trigger = gamepad1Triggers.get(input);
@@ -249,6 +257,10 @@ public class CommandScheduler {
         for (Subsystem requirement : requirements) {
             activeSubsystems.remove(requirement);
         }
+    }
+
+    public void cancelCommand(Command command) {
+        endCommand(command, true);
     }
 
     public void endAll() {

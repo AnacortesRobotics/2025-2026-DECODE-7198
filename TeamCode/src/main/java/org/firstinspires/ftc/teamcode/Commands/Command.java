@@ -61,4 +61,8 @@ public abstract class Command {
         return name;
     }
 
+    public Command cancel() {
+        return new InstantCommand(()->{CommandScheduler.getInstance().cancelCommand(this);});
+    }
+
 }

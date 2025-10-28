@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class PIDController {
 
     private double kP = 0;
@@ -12,11 +14,13 @@ public class PIDController {
     private double integral = 0;
 
     private boolean isInverted = false;
+    private boolean isRotate = false;
 
-    public PIDController(double kP, double kI, double kD) {
+    public PIDController(double kP, double kI, double kD, boolean isRotate) {
         this.kP = kP;
         this.kI = kI;
         this.kD = kD;
+        this.isRotate = isRotate;
     }
 
     public void setTarget(double target) {
@@ -42,7 +46,15 @@ public class PIDController {
         lastError = error;
         lastTime = System.currentTimeMillis();
 
-        return (isInverted ? -1 : 1) * ((error * kP) + (integral * kI) + (derivative * kD));
+        double rotateInvert = 1;
+
+        if (isRotate) {
+            if (target - current > 180 || target - current < -180) {
+                rotateInvert = -1;
+            }
+        }
+
+        return (isInverted ? -1 : 1) * rotateInvert * ((error * kP) + (integral * kI) + (derivative * kD));
     }
 
     public void stop() {

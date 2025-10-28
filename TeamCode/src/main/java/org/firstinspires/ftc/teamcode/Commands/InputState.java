@@ -16,7 +16,7 @@ public class InputState {
         this.threshold = threshold;
     }
     public InputState(double value,double lastValue){
-        this(value, lastValue, 1);
+        this(value, lastValue, 0.5);
     }
     public InputState(boolean value, boolean lastValue){
         this.value = (value ? 1:0);

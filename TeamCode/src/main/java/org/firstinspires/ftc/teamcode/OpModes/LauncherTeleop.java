@@ -1,17 +1,16 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.OpModes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Commands.Command;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
-import org.firstinspires.ftc.teamcode.Commands.Trigger;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 
 @TeleOp
 public class LauncherTeleop extends OpMode {
@@ -29,21 +28,21 @@ public class LauncherTeleop extends OpMode {
         commandScheduler.init(this);
         chassis = new Chassis(hardwareMap, telemetry, false);
 
-        commandScheduler
-                .getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY)
-                .onJustPressed(launcher.start());
-        commandScheduler
-                .getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY)
-                .onJustPressed(launcher.stop());
-        commandScheduler
-                .getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY)
-                .onJustPressed(launcher.adjustRPM(RPM_INCREMENTS));
-        commandScheduler
-                .getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY)
-                .onJustPressed(launcher.adjustRPM(-RPM_INCREMENTS));
-        commandScheduler.setDefaultCommands(
-                new InstantCommand(()->
-                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
+//        commandScheduler
+//                .getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY)
+//                .onJustPressed(launcher.start());
+//        commandScheduler
+//                .getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY)
+//                .onJustPressed(launcher.stop());
+//        commandScheduler
+//                .getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY)
+//                .onJustPressed(launcher.adjustRPM(RPM_INCREMENTS));
+//        commandScheduler
+//                .getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY)
+//                .onJustPressed(launcher.adjustRPM(-RPM_INCREMENTS));
+//        commandScheduler.setDefaultCommands(
+//                new InstantCommand(()->
+//                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
     }
 
     @Override
