@@ -47,49 +47,57 @@ public class SecondCompLauncher implements Subsystem {
     }
     public Command loadToLauncher(){
 //        loader.setPosition(.25);
+        this.telemetry.addData("we got to here",0.25);
 
         return new SequentialCommandGroup(
-//                new InstantCommand(
-//                        ()->loader.setPosition(.25)
-//                ),
-//                new WaitCommand(
-//                        250
-//                ),
-//                new InstantCommand(
-//                        ()->loader.setPosition(1)
-//                ),
-//                new WaitCommand(
-//                        1000
-//                ),
                 new InstantCommand(
-                        ()->loader.setPosition(0.25)
-                )
-
+                () -> loader.setPosition(0.25)
+        ),
+        new WaitCommand(
+                250
+        ),
+        new InstantCommand(
+                ()->loader.setPosition(1)
+        ),
+        new WaitCommand(
+                1000
+        ),
+         new InstantCommand(
+                ()->loader.setPosition(0)
+        ).setInterruptable(true)
         );
+
+//        return new InstantCommand(
+//                () -> loader.setPosition(0.25)
+//        ).setInterruptable(true);
+
+
+
+
     }
     private void setTargetRPM(double rpm){
-        pidL.setTarget(rpm);
-        pidR.setTarget(rpm);
-        targetRPM = rpm;
+//        pidL.setTarget(rpm);
+//        pidR.setTarget(rpm);
+//        targetRPM = rpm;
     }
     private void update(){
-        double leftrpm = getCurrentRPM(Launcher.LauncherWheel.LEFT);
-        leftMotor.setPower(pidL.update(leftrpm));
-        double rightrpm = getCurrentRPM(Launcher.LauncherWheel.RIGHT);
-        rightMotor.setPower(pidR.update(rightrpm));
-        isSpinningFlag = true;
+//        double leftrpm = getCurrentRPM(Launcher.LauncherWheel.LEFT);
+//        leftMotor.setPower(pidL.update(leftrpm));
+//        double rightrpm = getCurrentRPM(Launcher.LauncherWheel.RIGHT);
+//        rightMotor.setPower(pidR.update(rightrpm));
+//        isSpinningFlag = true;
     }
     public enum LauncherWheel {
         LEFT,
         RIGHT
     }
     public double getCurrentRPM(Launcher.LauncherWheel wheel){
-        switch(wheel){
-            case LEFT:
-                return 60*leftMotor.getVelocity()/TICKS_PER_REVOLUTION;
-            case RIGHT:
-                return 60*rightMotor.getVelocity()/TICKS_PER_REVOLUTION;
-        }
+//        switch(wheel){
+//            case LEFT:
+//                return 60*leftMotor.getVelocity()/TICKS_PER_REVOLUTION;
+//            case RIGHT:
+//                return 60*rightMotor.getVelocity()/TICKS_PER_REVOLUTION;
+//        }
         return 0;
     }
     public boolean isSpinning(){

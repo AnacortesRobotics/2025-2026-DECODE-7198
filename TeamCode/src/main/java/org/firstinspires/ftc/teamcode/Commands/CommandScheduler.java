@@ -138,7 +138,8 @@ public class CommandScheduler {
     }
 
     public void run() {
-        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty()) {return;}
+        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty() && defaultCommands.isEmpty() && gamepad1Triggers.isEmpty() && gamepad2Triggers.isEmpty()) {return;}
+        this.telemetry.addData("after test of empty commands in CommandScheduler: ", "world");
 
         Iterator<Command> commandIterator = scheduledCommands.iterator();
         while (commandIterator.hasNext()) {
@@ -190,6 +191,8 @@ public class CommandScheduler {
         for (GamepadInput input : gamepad1Triggers.keySet()){
             Trigger trigger = gamepad1Triggers.get(input);
             InputState inputState = getGamepadInput(input, GamepadIndex.PRIMARY);
+            this.telemetry.addData("CommandScheduler gamepad input: ", input.name());
+            this.telemetry.addData("CommandScheduler gamepad inputState: ", inputState.getValue());
             if (inputState.justPressed()){
                 schedule(trigger.getOnJustPressed());
             }

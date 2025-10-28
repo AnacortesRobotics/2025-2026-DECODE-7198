@@ -36,9 +36,9 @@ public class SecondCompLauncherTeleop extends OpMode {
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.LEFT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
                 .onJustPressed(secondCompLauncher.adjustRPM(-RPM_INCREMENTS));
-        commandScheduler.setDefaultCommands(
-                new InstantCommand(()->
-                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
+//        commandScheduler.setDefaultCommands(
+//                new InstantCommand(()->
+//                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
     }
     @Override
     public void loop() {
