@@ -28,7 +28,7 @@ public class RepeatCommand extends Command {
     @Override
     public void run() {
         if (currentLoops == maxLoops) return;
-        if (isStopped && currentLoops < maxLoops) {
+        if (isStopped && (currentLoops < maxLoops || maxLoops == -1)) {
             repeatCommand.init();
             isStopped = false;
         }

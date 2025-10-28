@@ -22,6 +22,9 @@ public class Chassis implements Subsystem {
 
     private LinearTrajectory trajectory;
 
+    public final double ROBOT_WIDTH = 15.625;
+    public final double ROBOT_LENGTH = 15.25;
+
     private DcMotor leftFront;
     private DcMotor rightFront;
     private DcMotor leftBack;
@@ -56,11 +59,12 @@ public class Chassis implements Subsystem {
         if (useOdo) {
             odo = hMap.get(GoBildaPinpointDriver.class, "odo");
             odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-            odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                    GoBildaPinpointDriver.EncoderDirection.REVERSED);
-            odo.setOffsets(461 / 64.0, 147 / 32.0, DistanceUnit.INCH);
-
+            odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                    GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            odo.setOffsets(3.14961, -5.94488, DistanceUnit.INCH);
+//    x  11.151  half   5.575     y  13.375  half  6.6875
             odo.resetPosAndIMU();
+
         }
         pidHorizontal.setInverted(true);
 
@@ -68,6 +72,10 @@ public class Chassis implements Subsystem {
 
         updateOdo();
         trajectory = new LinearTrajectory(telemetry, odo.getPosition());
+    }
+
+    public void setCurrentPose(Pose2D pose) {
+        odo.setPosition(pose);
     }
 
     public void mecanumDrive(double forward, double strafe, double rotate) {

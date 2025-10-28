@@ -24,8 +24,8 @@ public class Launcher implements Subsystem {
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.002,0,0);
-        pidR = new PIDController(0.002,0,0);
+        pidL = new PIDController(0.008,0,0);
+        pidR = new PIDController(0.008,0,0);
         leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
@@ -91,7 +91,12 @@ public class Launcher implements Subsystem {
                 ()->setTargetRPM(targetRPM + increment));
     }
     public Command stop(){
-        return new InstantCommand(()->stopPid(),this);
+        return new InstantCommand(this::stopPid,this);
+    }
+
+    public void updateTelemetry() {
+        telemetry.addData("Left wheel rpm", getCurrentRPM(LauncherWheel.LEFT));
+        telemetry.addData("Right wheel rpm", getCurrentRPM(LauncherWheel.RIGHT));
     }
 
 }
