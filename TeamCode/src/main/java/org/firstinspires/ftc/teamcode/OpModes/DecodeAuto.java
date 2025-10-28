@@ -36,7 +36,7 @@ public class DecodeAuto extends OpMode {
         Command firstDriveSegment = chassis.driveTrajectory(
                 new Pose2D(DistanceUnit.INCH, 72 - chassis.ROBOT_LENGTH / 2,  24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, -179),
                 new Pose2D(DistanceUnit.INCH, 12, 12, AngleUnit.DEGREES, -55)).setName("First Drive Segment");
-        Command prepareLauncher = launcher.chargeLauncher(.79).setName("Prepare Launcher");
+        Command prepareLauncher = launcher.setRPM(4700).setName("Prepare Launcher");
         Command launchBalls = new SequentialCommandGroup(
                 //new WaitCommand(800),
                 new RepeatCommand(
@@ -44,13 +44,15 @@ public class DecodeAuto extends OpMode {
                 addRequirements(chassis).setName("Launch Balls");
         Command moveToEnd = chassis.driveTrajectory(
                 new Pose2D(DistanceUnit.INCH, 12, 12, AngleUnit.DEGREES, -55),
-                new Pose2D(DistanceUnit.INCH, 16, 16, AngleUnit.DEGREES,
-                        //70 - chassis.ROBOT_LENGTH / 2,
-                        //24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES,
-                        -179)
+                new Pose2D(DistanceUnit.INCH,
+                        70 - chassis.ROBOT_LENGTH / 2,
+                        24 - chassis.ROBOT_WIDTH / 2,
+                        AngleUnit.DEGREES, -179)
         ).setName("Move to End");
+        Command testMove = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 16, 16, AngleUnit.DEGREES, -90));
+        Command testMove2 = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 16, 16, AngleUnit.DEGREES, -179));
 
-        commandScheduler.schedule(firstDriveSegment, prepareLauncher, launchBalls, moveToEnd,
+        commandScheduler.schedule(firstDriveSegment, launcher.start(), prepareLauncher, launchBalls, testMove, testMove2,
                 new InstantCommand(()-> chassis.stop()),
                 new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
     }
@@ -69,7 +71,9 @@ public class DecodeAuto extends OpMode {
     public void loop() {
         chassis.updateOdo();
 
-
+        if (System.currentTimeMillis() > 10000 && System.currentTimeMillis() < 11000) {
+            chassis.setMaxSpeed(.01);
+        }
 
         commandScheduler.run();
 

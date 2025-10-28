@@ -36,9 +36,9 @@ public class Chassis implements Subsystem {
     private GoBildaPinpointDriver odo;
     private Telemetry telemetry;
 
-    public PIDController pidForward = new PIDController(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD);
-    public PIDController pidHorizontal = new PIDController(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD);
-    public PIDController pidRotate = new PIDController(PIDCoefficients.RP, PIDCoefficients.RI, PIDCoefficients.RD);
+    public PIDController pidForward = new PIDController(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD, false);
+    public PIDController pidHorizontal = new PIDController(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD, false);
+    public PIDController pidRotate = new PIDController(PIDCoefficients.RP, PIDCoefficients.RI, PIDCoefficients.RD, true);
 
     public Chassis(HardwareMap hMap, Telemetry telemetry, boolean useOdo) {
 

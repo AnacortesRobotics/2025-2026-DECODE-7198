@@ -24,8 +24,8 @@ public class Launcher implements Subsystem {
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.008,0,0);
-        pidR = new PIDController(0.008,0,0);
+        pidL = new PIDController(0.008,0,0, false);
+        pidR = new PIDController(0.008,0,0, false);
         leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
