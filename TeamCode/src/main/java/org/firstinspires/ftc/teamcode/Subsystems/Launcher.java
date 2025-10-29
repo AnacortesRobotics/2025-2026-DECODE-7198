@@ -8,11 +8,13 @@ import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
+import org.firstinspires.ftc.teamcode.FeedforwardController;
 import org.firstinspires.ftc.teamcode.PIDController;
 
 public class Launcher implements Subsystem {
     private PIDController pidL;
     private PIDController pidR;
+    private FeedforwardController feedforward;
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;
     private Telemetry telemetry;
@@ -24,8 +26,9 @@ public class Launcher implements Subsystem {
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.008,0,0, false);
-        pidR = new PIDController(0.008,0,0, false);
+        pidL = new PIDController(0.006,0,0.006, false);
+        pidR = new PIDController(0.006,0,0.006, false);
+        feedforward = new FeedforwardController(0, 0.001);
         leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
@@ -48,9 +51,9 @@ public class Launcher implements Subsystem {
     }
     private void update(){
         double leftrpm = getCurrentRPM(LauncherWheel.LEFT);
-        leftMotor.setPower(pidL.update(leftrpm));
+        leftMotor.setPower(pidL.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
         double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
-        rightMotor.setPower(pidR.update(rightrpm));
+        rightMotor.setPower(pidR.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
         isSpinningFlag = true;
     }
     public enum LauncherWheel {

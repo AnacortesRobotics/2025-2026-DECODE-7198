@@ -52,7 +52,7 @@ public class DecodeAuto extends OpMode {
         Command testMove = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 16, 16, AngleUnit.DEGREES, -90));
         Command testMove2 = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 16, 16, AngleUnit.DEGREES, -179));
 
-        commandScheduler.schedule(firstDriveSegment, launcher.start(), prepareLauncher, launchBalls, testMove, testMove2,
+        commandScheduler.schedule(firstDriveSegment, launcher.start(), prepareLauncher, launchBalls, moveToEnd,
                 new InstantCommand(()-> chassis.stop()),
                 new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
     }
@@ -60,7 +60,7 @@ public class DecodeAuto extends OpMode {
     @Override
     public void start() {
         chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, 72 - chassis.ROBOT_LENGTH / 2.0, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, -179));
-        chassis.setMaxSpeed(.9);
+        //chassis.setMaxSpeed(.9);
         launcher.setRPM(4800);
         //commandScheduler.schedule(new RepeatCommand(new SequentialCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 24, 0, AngleUnit.DEGREES, 0)).setName("DriveFar"),
         //        chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0)).setName("DriveBack"))));
@@ -71,14 +71,11 @@ public class DecodeAuto extends OpMode {
     public void loop() {
         chassis.updateOdo();
 
-        if (System.currentTimeMillis() > 10000 && System.currentTimeMillis() < 11000) {
-            chassis.setMaxSpeed(.01);
-        }
-
         commandScheduler.run();
 
         commandScheduler.updateTelemetry();
         chassis.updateTelemetry();
+        launcher.updateTelemetry();
     }
 
     @Override

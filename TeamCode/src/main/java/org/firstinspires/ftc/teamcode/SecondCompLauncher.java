@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.Commands.*;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 
 import static java.lang.Thread.sleep;
 
@@ -26,8 +27,8 @@ public class SecondCompLauncher implements Subsystem {
 
     public SecondCompLauncher(HardwareMap hMap, Telemetry telemetry) {// the error is fine if no error delete this
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.002,0,0);
-        pidR = new PIDController(0.002,0,0);
+        pidL = new PIDController(0.002,0,0, false);
+        pidR = new PIDController(0.002,0,0, false);
 //        leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
 //        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");

@@ -49,8 +49,8 @@ public class DecodeTeleOp extends OpMode {
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(targetAngle);
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(targetAngle.cancel());
         commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(
-                launcher.chargeLauncher(.78)
-        ));
+                launcher.setRPM(4800), launcher.start()
+        ).setInterruptable(true));
         commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(
                 launcher.chargeLauncher(.82)
         ));
