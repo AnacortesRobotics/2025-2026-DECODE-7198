@@ -140,7 +140,7 @@ public class CommandScheduler {
     }
 
     public void run() {
-        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty() && defaultCommands.isEmpty()) {return;}
+        if (scheduledCommands.isEmpty() && activeSubsystems.isEmpty() && defaultCommands.isEmpty() && gamepad1Triggers.isEmpty() && gamepad2Triggers.isEmpty()) {return;}
 
         gamepad1 = opMode.gamepad1;
         gamepad2 = opMode.gamepad2;

@@ -36,6 +36,8 @@ public class Chassis implements Subsystem {
     private GoBildaPinpointDriver odo;
     private Telemetry telemetry;
 
+    private double holonomicOffset = 0;
+
     public PIDController pidForward = new PIDController(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD, false);
     public PIDController pidHorizontal = new PIDController(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD, false);
     public PIDController pidRotate = new PIDController(PIDCoefficients.RP, PIDCoefficients.RI, PIDCoefficients.RD, true);
@@ -95,10 +97,14 @@ public class Chassis implements Subsystem {
     }
 
     public void mecanumDriveFieldCentric(double vertical, double horizontal, double rotate) {
-        double heading = -odo.getHeading(AngleUnit.RADIANS);
+        double heading = -odo.getHeading(AngleUnit.RADIANS) + holonomicOffset;
         double robotVert = Math.sin(heading) * horizontal + Math.cos(heading) * vertical;
         double robotHoriz = Math.cos(heading) * horizontal - Math.sin(heading) * vertical;
         mecanumDrive(robotVert, robotHoriz, rotate);
+    }
+
+    public void setHolonomicOffset(double offsetPI) {
+        holonomicOffset = offsetPI;
     }
 
     public void updateOdo() {

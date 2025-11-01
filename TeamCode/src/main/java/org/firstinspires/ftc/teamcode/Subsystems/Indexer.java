@@ -31,10 +31,5 @@ public class Indexer implements Subsystem {
         indexServo.setPosition(.7);
     }
 
-    private void nextArtifact() {
-
-    }
-
-
 
 }
