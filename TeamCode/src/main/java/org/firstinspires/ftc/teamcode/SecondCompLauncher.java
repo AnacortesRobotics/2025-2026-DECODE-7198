@@ -7,34 +7,87 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import java.io.Console;
+
 import static java.lang.Thread.sleep;
 
 
 public class SecondCompLauncher implements Subsystem {
     private PIDController pidL;
     private PIDController pidR;
+    private PIDController indexerPid;
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;
     private Telemetry telemetry;
     private CRServo indexer;
+    private AnalogInput indexerPosition;
     public Servo loader;
+    public double pastPos;
+    public double nowPos;
+    private Direction direction;
     private double targetRPM = 0;
 
 
     private final int TICKS_PER_REVOLUTION = 28;
     private boolean isSpinningFlag = false;
 
-    public SecondCompLauncher(HardwareMap hMap, Telemetry telemetry) {// the error is fine if no error delete this
+    public SecondCompLauncher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.002,0,0);
-        pidR = new PIDController(0.002,0,0);
+        pidL = new PIDController(0.002,0,0, false);
+        pidR = new PIDController(0.002,0,0, false);
+        indexerPid = new PIDController(.01, 0, 0, false);
 //        leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
 //        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
 //        rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-//        indexer = hMap.get(CRServo.class, "indexerServo");
+        indexer = hMap.get(CRServo.class, "indexerServo");
+        indexerPosition = hMap.get(AnalogInput.class, "indexerPOS");
         loader = hMap.get(Servo.class, "loaderServo");
+        this.direction = Direction.FORWARD;
         this.telemetry = telemetry;
+    }
+//    public boolean spindexer(){
+//        //1 create pid controller
+//        //2 get position using second port
+//        //3
+//
+//    }
+    public Command turnSpindexer(){
+        indexerPid.setTarget(indexerPid.getTarget());
+//        indexer.setPower(indexerPid.update(indexerPosition));
+        telemetry.addData("position: ", indexerPosition);
+        return new InstantCommand(
+                () -> indexer.setPower(0.05)
+        );
+
+    }
+    public Command stopTurningSpindexer(){
+        if (nowPos == 0) {
+            return new InstantCommand(
+                    () -> indexer.setPower(0)
+            );
+        }
+        else {
+            return new InstantCommand(
+                    ()-> indexer.setPower(0.05)
+            );
+}
+    }
+    public enum Direction {
+        FORWARD,
+        REVERSE
+    }
+    public double getServoPosition(){
+        if (indexerPosition == null) {
+            pastPos = 0;
+        }
+        else {
+            pastPos = nowPos;
+            telemetry.addData("past position",pastPos);
+        }
+        nowPos = (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
+        return nowPos;
+        //        return (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
     }
     public void setPower(double power){
         rightMotor.setPower(power);
@@ -47,8 +100,6 @@ public class SecondCompLauncher implements Subsystem {
     }
     public Command loadToLauncher(){
 //        loader.setPosition(.25);
-        this.telemetry.addData("we got to here",0.25);
-
         return new SequentialCommandGroup(
                 new InstantCommand(
                 () -> loader.setPosition(0.25)
@@ -86,12 +137,14 @@ public class SecondCompLauncher implements Subsystem {
 //        double rightrpm = getCurrentRPM(Launcher.LauncherWheel.RIGHT);
 //        rightMotor.setPower(pidR.update(rightrpm));
 //        isSpinningFlag = true;
+        telemetry.addData("in y button past position", pastPos);
+        telemetry.addData("in y button now position", nowPos);
     }
     public enum LauncherWheel {
         LEFT,
         RIGHT
     }
-    public double getCurrentRPM(Launcher.LauncherWheel wheel){
+    public double getCurrentRPM(SecondCompLauncher.LauncherWheel wheel){
 //        switch(wheel){
 //            case LEFT:
 //                return 60*leftMotor.getVelocity()/TICKS_PER_REVOLUTION;
