@@ -49,8 +49,8 @@ public class DecodeAutoBlueFar extends OpMode {
                 new InstantCommand(()->chassis.setMaxSpeed(.4)).setName("Slow down chassis").addRequirements(chassis),
                 launcher.stop().addRequirements(chassis),
                 moveToEnd,
-                new InstantCommand(()-> chassis.stop()),
-                new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
+                new InstantCommand(()-> chassis.stop(), chassis));
+                //new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
     }
 
     @Override

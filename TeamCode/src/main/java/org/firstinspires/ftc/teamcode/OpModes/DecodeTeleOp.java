@@ -47,8 +47,8 @@ public class DecodeTeleOp extends OpMode {
         isRed = valueTurnover.getIsRed();
 
         //Command driveToStart = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
-        Command targetAngle = chassis.autoTurn(()->forward, ()->strafe, isRed ? new Pose2D(DistanceUnit.INCH, 72, -72, AngleUnit.DEGREES, 0) :
-                new Pose2D(DistanceUnit.INCH, 72, 72, AngleUnit.DEGREES, 0));
+        Command targetAngle = chassis.autoTurn(()->forward, ()->strafe, isRed ? new Pose2D(DistanceUnit.INCH, 71, -71, AngleUnit.DEGREES, 0) :
+                new Pose2D(DistanceUnit.INCH, 71, 71, AngleUnit.DEGREES, 0));
 //        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).
 //                onJustPressed(driveToStart);
 //        commandScheduler.getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY).

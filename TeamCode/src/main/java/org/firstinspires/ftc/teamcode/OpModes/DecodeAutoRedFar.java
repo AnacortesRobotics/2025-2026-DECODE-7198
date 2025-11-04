@@ -45,12 +45,12 @@ public class DecodeAutoRedFar extends OpMode {
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, -48 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
-        commandScheduler.schedule( turnToShoot, launcher.start(), prepareLauncher, launchBalls,
+        commandScheduler.schedule(turnToShoot, launcher.start(), prepareLauncher, launchBalls,
                 new InstantCommand(()->chassis.setMaxSpeed(.4)).setName("Slow down chassis").addRequirements(chassis),
                 launcher.stop().addRequirements(chassis),
                 moveToEnd,
-                new InstantCommand(()-> chassis.stop()),
-                new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
+                new InstantCommand(()-> chassis.stop(), chassis));
+                //new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
     }
 
     @Override

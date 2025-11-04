@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Color;
 //import android.hardware.Sensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 
+@Disabled
 @TeleOp
 public class TestingOpMode extends OpMode {
     private DistanceSensor distance;
