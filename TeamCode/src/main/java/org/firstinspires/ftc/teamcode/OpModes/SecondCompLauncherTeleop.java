@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
-import org.firstinspires.ftc.teamcode.Commands.WaitCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
+import org.firstinspires.ftc.teamcode.Subsystems.SecondCompLauncher;
 
 @TeleOp
 public class SecondCompLauncherTeleop extends OpMode {
@@ -23,21 +22,35 @@ public class SecondCompLauncherTeleop extends OpMode {
 
         secondCompLauncher =  new SecondCompLauncher(hardwareMap, telemetry);
 
-        commandScheduler
-                .getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
-                .onJustPressed(secondCompLauncher.start());
+//        commandScheduler
+//                .getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
+//                .onJustPressed(secondCompLauncher.start());
 //        commandScheduler
 //                .getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
 //                .onJustPressed(secondCompLauncher.stop());
         commandScheduler
+                .getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
+                .onPressed(secondCompLauncher.changeServoSpeed());
+        commandScheduler
+                .getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
+                .onPressed(secondCompLauncher.setPastPos());
+        commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.Y_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
-                .onPressed(secondCompLauncher.stopTurningSpindexer());
+                .onJustPressed(secondCompLauncher.stopTurningSpindexer());
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.X_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
                 .onJustPressed(secondCompLauncher.turnSpindexer());
+
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
-                .onJustPressed(secondCompLauncher.adjustRPM(RPM_INCREMENTS));
+                .onPressed(secondCompLauncher.testMotorProgrammer());
+        commandScheduler
+                .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
+                .onReleased(secondCompLauncher.stopMotorProgrammer());
+
+//        commandScheduler
+//                .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
+//                .onJustPressed(secondCompLauncher.adjustRPM(RPM_INCREMENTS));
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.LEFT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
                 .onJustPressed(secondCompLauncher.adjustRPM(-RPM_INCREMENTS));
@@ -52,12 +65,14 @@ public class SecondCompLauncherTeleop extends OpMode {
 //        telemetry.addData("right rpm", SecondCompLauncher.getCurrentRPM(Launcher.LauncherWheel.RIGHT));
 //        telemetry.addData("Is it working ", SecondCompLauncher.isSpinning());
         telemetry.addData("servo position (s/b nowPos)", secondCompLauncher.getServoPosition());
-        telemetry.addData("pastPos outside:", secondCompLauncher.pastPos);
+        telemetry.addData("pastPos outside:", secondCompLauncher.capturedPos);
         telemetry.addData("nowPos outside:", secondCompLauncher.nowPos);
-        commandScheduler.wait(2000);
 
         commandScheduler.run();
+        secondCompLauncher.update();
+        secondCompLauncher.updateTelemetry();
         commandScheduler.updateTelemetry();
+
     }
 
 }

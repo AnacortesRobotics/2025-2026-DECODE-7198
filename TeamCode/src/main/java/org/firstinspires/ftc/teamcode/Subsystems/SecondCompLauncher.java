@@ -1,13 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Commands.*;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import java.io.Console;
+import org.firstinspires.ftc.teamcode.PIDController;
 
 import static java.lang.Thread.sleep;
 
@@ -22,11 +20,25 @@ public class SecondCompLauncher implements Subsystem {
     private CRServo indexer;
     private AnalogInput indexerPosition;
     public Servo loader;
-    public double pastPos;
+    public double capturedPos;
     public double nowPos;
+
+
+
+    private DcMotor motorProgrammer;
+    final private double minSpeed = 0.01;
+    final private double maxSpeed = 0.20;
+    final private double speedBump = 0.05;
     private Direction direction;
     private double targetRPM = 0;
 
+//    public final double TPR = 384.5;
+    public final double TPR = 8192;
+
+    public int position;
+    public double revolutions;
+    public double angle;
+    public double angleNormalized;
 
     private final int TICKS_PER_REVOLUTION = 28;
     private boolean isSpinningFlag = false;
@@ -43,23 +55,104 @@ public class SecondCompLauncher implements Subsystem {
         indexer = hMap.get(CRServo.class, "indexerServo");
         indexerPosition = hMap.get(AnalogInput.class, "indexerPOS");
         loader = hMap.get(Servo.class, "loaderServo");
+        motorProgrammer = hMap.get(DcMotor.class, "testProgramer");
+
+        motorProgrammer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorProgrammer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         this.direction = Direction.FORWARD;
         this.telemetry = telemetry;
     }
+
 //    public boolean spindexer(){
 //        //1 create pid controller
 //        //2 get position using second port
 //        //3
 //
 //    }
+
     public Command turnSpindexer(){
         indexerPid.setTarget(indexerPid.getTarget());
-//        indexer.setPower(indexerPid.update(indexerPosition));
-        telemetry.addData("position: ", indexerPosition);
-        return new InstantCommand(
-                () -> indexer.setPower(0.05)
-        );
+        capturedPos = getServoPosition();//(indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
+        return new SequentialCommandGroup(
+            new InstantCommand(
+                () -> indexer.setPower(0.1)
+            ),
 
+            new WaitCommand(
+                400
+            ),
+            new InstantCommand(
+                () -> indexer.setPower(0)
+            )
+        );
+    }
+
+    public Command testMotorProgrammer(){
+        getEncoderPosition();
+        return new SequentialCommandGroup(
+
+            new InstantCommand(
+                () -> motorProgrammer.setPower(0.2)
+            ),
+
+            new InstantCommand(
+                () -> telemetry.addData("motor position", motorProgrammer.getCurrentPosition())
+            ),
+
+            new InstantCommand(
+                () -> telemetry.addData("angle", angle)
+            ),
+
+            new InstantCommand(
+                    () -> telemetry.addData("revolutions", revolutions)
+            ),
+            new InstantCommand(
+                () -> telemetry.addData("angle normalized", angleNormalized)
+            )
+        );
+    }
+
+    public void getEncoderPosition() {
+        position = motorProgrammer.getCurrentPosition();
+        revolutions = position/TPR;
+        angle = revolutions * 360;
+        angleNormalized = angle % 360;
+    }
+
+    public Command stopMotorProgrammer(){
+//        position = motorProgrammer.getCurrentPosition();
+//        revolutions = position/TPR;
+//        angle = revolutions * 360;
+//        angleNormalized = position/TPR;
+        getEncoderPosition();
+        return new SequentialCommandGroup(
+            new InstantCommand(
+                () -> motorProgrammer.setPower(0)
+            ),
+
+            new InstantCommand(
+                () -> telemetry.addData("motor position", motorProgrammer.getCurrentPosition())
+            )
+
+        );
+    }
+
+    public Command changeServoSpeed(){
+        if (indexer.getPower() > minSpeed) {
+            return new InstantCommand(
+                    () -> indexer.setPower(indexer.getPower() + speedBump)
+            );
+        }
+        if (indexer.getPower() < maxSpeed){
+            return new InstantCommand(
+                    () -> indexer.setPower(indexer.getPower() + speedBump)
+            );
+        }
+//        return void;
+        return new InstantCommand(
+                () -> indexer.setPower(.05)
+        );
     }
     public Command stopTurningSpindexer(){
         if (nowPos == 0) {
@@ -71,33 +164,42 @@ public class SecondCompLauncher implements Subsystem {
             return new InstantCommand(
                     ()-> indexer.setPower(0.05)
             );
-}
+        }
+    }
+    public Command setPastPos(){
+        return new InstantCommand(
+                () -> capturedPos = nowPos
+        );
     }
     public enum Direction {
         FORWARD,
         REVERSE
     }
+
     public double getServoPosition(){
         if (indexerPosition == null) {
-            pastPos = 0;
+            capturedPos = 0;
         }
         else {
-            pastPos = nowPos;
-            telemetry.addData("past position",pastPos);
+//            capturedPos = nowPos;
+            telemetry.addData("past position",capturedPos);
         }
         nowPos = (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
         return nowPos;
         //        return (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
     }
+
     public void setPower(double power){
         rightMotor.setPower(power);
         leftMotor.setPower(power);
     }
+
     public Command chargeLauncher(double power) {
         return new InstantCommand(
                 () -> setPower(power)
         ).setInterruptable(true);
     }
+
     public Command loadToLauncher(){
 //        loader.setPosition(.25);
         return new SequentialCommandGroup(
@@ -126,24 +228,37 @@ public class SecondCompLauncher implements Subsystem {
 
 
     }
+
     private void setTargetRPM(double rpm){
 //        pidL.setTarget(rpm);
 //        pidR.setTarget(rpm);
 //        targetRPM = rpm;
     }
-    private void update(){
+
+    public void update() {
 //        double leftrpm = getCurrentRPM(Launcher.LauncherWheel.LEFT);
 //        leftMotor.setPower(pidL.update(leftrpm));
 //        double rightrpm = getCurrentRPM(Launcher.LauncherWheel.RIGHT);
 //        rightMotor.setPower(pidR.update(rightrpm));
 //        isSpinningFlag = true;
-        telemetry.addData("in y button past position", pastPos);
-        telemetry.addData("in y button now position", nowPos);
     }
+
+    public void updateTelemetry() {
+        getEncoderPosition();
+//        telemetry.addData("in y button past position", capturedPos);
+//        telemetry.addData("in y button now position", nowPos);
+        telemetry.addData("Motor Position", position);
+        telemetry.addData("Motor Revolutions", revolutions);
+        telemetry.addData("Motor Angle (Degrees)", angle);
+        telemetry.addData("Motor Angle - Normalized (Degrees)", angleNormalized);
+    }
+
+
     public enum LauncherWheel {
         LEFT,
         RIGHT
     }
+
     public double getCurrentRPM(SecondCompLauncher.LauncherWheel wheel){
 //        switch(wheel){
 //            case LEFT:
@@ -153,6 +268,7 @@ public class SecondCompLauncher implements Subsystem {
 //        }
         return 0;
     }
+
     public boolean isSpinning(){
         return isSpinningFlag;
     }
@@ -162,6 +278,7 @@ public class SecondCompLauncher implements Subsystem {
         pidR.stop();
         setPower(0);
     }
+
     public Command start(){
         return new FunctionalCommand(
                 ()->setTargetRPM(targetRPM),
