@@ -30,21 +30,21 @@ public class LauncherTeleop extends OpMode {
         commandScheduler.init(this);
         chassis = new Chassis(hardwareMap, telemetry, false);
 
-//        commandScheduler
-//                .getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY)
-//                .onJustPressed(launcher.start());
-//        commandScheduler
-//                .getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY)
-//                .onJustPressed(launcher.stop());
-//        commandScheduler
-//                .getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY)
-//                .onJustPressed(launcher.adjustRPM(RPM_INCREMENTS));
-//        commandScheduler
-//                .getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY)
-//                .onJustPressed(launcher.adjustRPM(-RPM_INCREMENTS));
-//        commandScheduler.setDefaultCommands(
-//                new InstantCommand(()->
-//                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
+        commandScheduler
+                .getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY)
+                .onJustPressed(launcher.start());
+        commandScheduler
+                .getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY)
+                .onJustPressed(launcher.stop());
+        commandScheduler
+                .getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY)
+                .onJustPressed(launcher.adjustRPM(RPM_INCREMENTS));
+        commandScheduler
+                .getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY)
+                .onJustPressed(launcher.adjustRPM(-RPM_INCREMENTS));
+        commandScheduler.setDefaultCommands(
+                new InstantCommand(()->
+                        chassis.mecanumDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x), chassis));
     }
 
     @Override

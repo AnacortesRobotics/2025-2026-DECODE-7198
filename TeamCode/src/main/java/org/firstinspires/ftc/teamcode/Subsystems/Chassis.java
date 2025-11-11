@@ -9,11 +9,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
-import org.firstinspires.ftc.teamcode.LinearTrajectory;
-import org.firstinspires.ftc.teamcode.PIDController;
+import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
+import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 
 import java.util.Locale;
 import java.util.function.DoubleSupplier;

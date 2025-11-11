@@ -24,11 +24,11 @@ public class Indexer implements Subsystem {
     }
 
     private void loadBall() {
-        indexServo.setPosition(0);
+        indexServo.setPosition(.38);
     }
 
     private void retractServo() {
-        indexServo.setPosition(.7);
+        indexServo.setPosition(.6);
     }
 
 

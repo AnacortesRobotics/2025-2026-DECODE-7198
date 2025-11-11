@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes;
+package org.firstinspires.ftc.teamcode.OpModes.BlueAuto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -6,14 +6,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.*;
-import org.firstinspires.ftc.teamcode.LinearTrajectory;
+import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @Autonomous
-public class DecodeAutoBlueFar extends OpMode {
+public class DecodeAutoBlueFarWait extends OpMode {
 
     Chassis chassis;
     LinearTrajectory trajectory;
@@ -35,9 +35,8 @@ public class DecodeAutoBlueFar extends OpMode {
         commandScheduler.init(this);
 
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setName("Turn To Shoot").setInterruptable(false);
-        Command prepareLauncher = launcher.setRPM(4950).setName("Prepare Launcher");
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4910), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
-                //new WaitCommand(800),
                 new RepeatCommand(
                         new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
@@ -45,21 +44,18 @@ public class DecodeAutoBlueFar extends OpMode {
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
-        commandScheduler.schedule(turnToShoot, launcher.start(), prepareLauncher, launchBalls,
-                new InstantCommand(()->chassis.setMaxSpeed(.4)).setName("Slow down chassis").addRequirements(chassis),
-                launcher.stop().addRequirements(chassis),
-                moveToEnd,
-                new InstantCommand(()-> chassis.stop(), chassis));
-                //new InstantCommand(this::terminateOpModeNow).addRequirements(chassis));
+        Command firstSegment = new ParallelCommandGroup(turnToShoot, prepareLauncher);
+        Command secondSegment = new ParallelCommandGroup(launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.5)));
+        Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd);
+
+        commandScheduler.schedule(new SequentialCommandGroup(
+                new WaitCommand(10000), firstSegment, secondSegment, thirdSegment, new InstantCommand(()->chassis.stop())
+        ));
     }
 
     @Override
     public void start() {
         chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0));
-        //chassis.setMaxSpeed(.9);
-        //launcher.setRPM(4800);
-        //commandScheduler.schedule(new RepeatCommand(new SequentialCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 24, 0, AngleUnit.DEGREES, 0)).setName("DriveFar"),
-        //        chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0)).setName("DriveBack"))));
 
     }
 

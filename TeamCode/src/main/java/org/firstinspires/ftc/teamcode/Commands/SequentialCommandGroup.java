@@ -9,7 +9,7 @@ public class SequentialCommandGroup extends Command {
 
     private List<Command> commands = new ArrayList<>();
 
-    private int commandIndex = -1;
+    public int commandIndex = -1;
 
     public SequentialCommandGroup(Command... commands) {
         addCommands(commands);

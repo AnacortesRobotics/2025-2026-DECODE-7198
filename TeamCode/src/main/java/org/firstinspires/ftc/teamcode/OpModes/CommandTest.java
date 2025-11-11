@@ -7,6 +7,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
+import org.firstinspires.ftc.teamcode.Commands.ParallelCommandGroup;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
@@ -28,10 +30,18 @@ public class CommandTest extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
+        launcher = new Launcher(hardwareMap, telemetry);
 
         commandScheduler = CommandScheduler.getInstance();
         valueTurnover = ValueTurnover.getInstance();
         commandScheduler.init(this);
+
+        commandScheduler.schedule(new ParallelCommandGroup(
+                chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 24, 24, AngleUnit.DEGREES, 0)),
+                //chassis.autoTurn(()->0, ()->0, new Pose2D(DistanceUnit.INCH, 6, 6, AngleUnit.DEGREES, 0))
+                launcher.chargeLauncher(500)
+
+        ));
 
 //        commandScheduler.schedule(chassis.driveTrajectory(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0),
 //                new Pose2D(DistanceUnit.INCH, 24, 0, AngleUnit.DEGREES, 0),

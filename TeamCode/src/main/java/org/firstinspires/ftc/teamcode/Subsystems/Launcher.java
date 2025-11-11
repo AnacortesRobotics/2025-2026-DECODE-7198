@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
-import org.firstinspires.ftc.teamcode.FeedforwardController;
-import org.firstinspires.ftc.teamcode.PIDController;
+import org.firstinspires.ftc.teamcode.Controllers.FeedforwardController;
+import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 
 public class Launcher implements Subsystem {
     private PIDController pidL;
