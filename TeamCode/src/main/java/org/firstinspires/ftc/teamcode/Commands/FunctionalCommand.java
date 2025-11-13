@@ -23,6 +23,14 @@ public class FunctionalCommand extends Command {
         addRequirements(requirements);
     }
 
+    public FunctionalCommand(FunctionalCommand command) {
+        onInit = command.onInit;
+        onRun = command.onRun;
+        onStop = command.onStop;
+        isFinished = command.isFinished;
+        addRequirements(command.getRequirements());
+    }
+
     @Override
     public void init() {
         onInit.run();

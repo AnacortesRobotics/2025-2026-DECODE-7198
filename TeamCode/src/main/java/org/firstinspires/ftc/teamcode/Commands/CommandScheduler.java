@@ -191,7 +191,9 @@ public class CommandScheduler {
         }
 
         Set<Command> commandsToEnd = new HashSet<>();
-        for (Command command : activeCommands) {
+        Iterator<Command> iterator = activeCommands.iterator();
+        while (iterator.hasNext()){
+            Command command = iterator.next();
             command.run();
             if (command.isFinished()) {
                 commandsToEnd.add(command);

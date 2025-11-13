@@ -3,13 +3,11 @@ package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.Commands.Command;
-import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
-import org.firstinspires.ftc.teamcode.Commands.SequentialCommandGroup;
+import org.firstinspires.ftc.teamcode.Commands.*;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
@@ -46,36 +44,36 @@ public class DecodeTeleOp extends OpMode {
         commandScheduler.init(this);
         isRed = valueTurnover.getIsRed();
 
-        //Command driveToStart = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         Command targetAngle = chassis.autoTurn(()->forward, ()->strafe, isRed ? new Pose2D(DistanceUnit.INCH, 71, -71, AngleUnit.DEGREES, 0) :
                 new Pose2D(DistanceUnit.INCH, 71, 71, AngleUnit.DEGREES, 0));
-//        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).
-//                onJustPressed(driveToStart);
-//        commandScheduler.getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY).
-//                onJustPressed(driveToStart.cancel());
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(targetAngle);
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(targetAngle.cancel());
         commandScheduler.getTrigger(GamepadInput.RIGHT_TRIGGER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.setMaxSpeed(.4)));
         commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.setMaxSpeed(1)));
-        Command driveToLoad = chassis.driveToPosition(isRed ? new Pose2D(DistanceUnit.INCH, 63, -63, AngleUnit.DEGREES, -45)
-                : new Pose2D(DistanceUnit.INCH, -63, -63, AngleUnit.DEGREES, 45)).setInterruptable(true);
-        Command driveToShootFar = chassis.driveToPosition(isRed ?
+        Command driveToLoad = new ParallelCommandGroup(chassis.driveToPosition(isRed ? new Pose2D(DistanceUnit.INCH, -61, 61, AngleUnit.DEGREES, -45)
+                : new Pose2D(DistanceUnit.INCH, -61, -61, AngleUnit.DEGREES, 45)).setInterruptable(true),
+                new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive to load");
+        Command driveToShootFar = new ParallelCommandGroup(chassis.driveToPosition(isRed ?
                 new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -20) :
-                new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setInterruptable(true);
-        Command driveToShootMiddle = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, isRed ? -55 : 55)).setInterruptable(true);
-        Command driveToPark = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -39, isRed ? 33 : -33, AngleUnit.DEGREES, 0)).setInterruptable(true);
+                new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setInterruptable(true),
+                new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive To shoot far");
+        Command driveToShootMiddle = new ParallelCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, isRed ? -55 : 55)),
+                new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive To shoot middle");
+        Command driveToPark = new ParallelCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -39, isRed ? 33 : -33, AngleUnit.DEGREES, 0)).setInterruptable(true),
+                new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive to park");
         commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(driveToLoad);
         commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(driveToShootFar);
         commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(driveToShootMiddle);
         commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(driveToPark);
-        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(
-                driveToLoad.cancel(), driveToShootFar.cancel(), driveToShootMiddle.cancel(), driveToPark.cancel()));
+        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new ParallelCommandGroup(
+                driveToLoad.cancel(), driveToShootFar.cancel(), driveToShootMiddle.cancel(), driveToPark.cancel()),
+                new InstantCommand(()->chassis.setMaxSpeed(1)));
 
 //        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
 //                launcher.setRPM(4540), launcher.start()
 //        ).setInterruptable(true));
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                launcher.setRPM(4910), launcher.start()
+                        launcher.setRPM(4760), launcher.start()
         ).setInterruptable(true));
         commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop().setName("Stop launcher"));
         commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireBall());

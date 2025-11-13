@@ -35,8 +35,8 @@ public class DecodeAutoRedFar extends OpMode {
         valueTurnover = ValueTurnover.getInstance();
         commandScheduler.init(this);
                                                                                         //-61.375                            -17.1875
-        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -20)).setName("Turn To Position");
-        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4910), launcher.start());
+        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -21)).setName("Turn To Position");
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4760), launcher.start());
         Command launchBalls = new RepeatCommand(
                         new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
@@ -44,9 +44,9 @@ public class DecodeAutoRedFar extends OpMode {
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, -48 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
-        Command firstSegment = new ParallelCommandGroup(turnToShoot, prepareLauncher).setName("First segment");
-        Command secondSegment = new ParallelCommandGroup(launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.5))).setName("Second segment");
-        Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd).setName("Last segment");
+        Command firstSegment = new ParallelRaceCommandGroup(turnToShoot, prepareLauncher).setName("First segment");
+        Command secondSegment = new ParallelRaceCommandGroup(launchBalls, launcher.start()).setName("Second segment");
+        Command thirdSegment = new ParallelCommandGroup(new InstantCommand(()->chassis.setMaxSpeed(.5)), launcher.stop(), moveToEnd).setName("Last segment");
 
         commandScheduler.schedule(new SequentialCommandGroup(
                 firstSegment, secondSegment, thirdSegment, new InstantCommand(()->chassis.stop())

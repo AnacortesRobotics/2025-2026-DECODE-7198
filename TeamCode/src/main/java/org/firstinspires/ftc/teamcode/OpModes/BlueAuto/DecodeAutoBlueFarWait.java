@@ -35,7 +35,7 @@ public class DecodeAutoBlueFarWait extends OpMode {
         commandScheduler.init(this);
 
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setName("Turn To Shoot").setInterruptable(false);
-        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4910), launcher.start());
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4760), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 new RepeatCommand(
                         new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
@@ -44,8 +44,8 @@ public class DecodeAutoBlueFarWait extends OpMode {
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
-        Command firstSegment = new ParallelCommandGroup(turnToShoot, prepareLauncher);
-        Command secondSegment = new ParallelCommandGroup(launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.5)));
+        Command firstSegment = new ParallelRaceCommandGroup(turnToShoot, prepareLauncher);
+        Command secondSegment = new ParallelRaceCommandGroup(launcher.start(), launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.5)));
         Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd);
 
         commandScheduler.schedule(new SequentialCommandGroup(

@@ -37,7 +37,7 @@ public class DecodeAutoRedDepotWait extends OpMode {
         Command firstDriveSegment = chassis.driveTrajectory(
                 new Pose2D(DistanceUnit.INCH, 72.3 - chassis.ROBOT_LENGTH / 2,  -47 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 175),
                 new Pose2D(DistanceUnit.INCH, 12, -14, AngleUnit.DEGREES, -55)).setName("First Drive Segment");
-        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4910), launcher.start());
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4760), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 //new WaitCommand(800),
                 new RepeatCommand(
@@ -51,8 +51,8 @@ public class DecodeAutoRedDepotWait extends OpMode {
                         AngleUnit.DEGREES, 175)
         ).setName("Move to End");
 
-        Command firstSegment = new ParallelCommandGroup(firstDriveSegment, prepareLauncher);
-        Command secondSegment = new ParallelCommandGroup(launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.4)));
+        Command firstSegment = new ParallelRaceCommandGroup(firstDriveSegment, prepareLauncher);
+        Command secondSegment = new ParallelRaceCommandGroup(launcher.start(), launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.4)));
         Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd);
 
         commandScheduler.schedule(new WaitCommand(10000), firstSegment, secondSegment, thirdSegment,
