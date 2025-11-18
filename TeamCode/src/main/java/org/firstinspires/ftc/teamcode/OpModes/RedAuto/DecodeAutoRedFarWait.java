@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.*;
+import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
@@ -35,7 +36,7 @@ public class DecodeAutoRedFarWait extends OpMode {
         commandScheduler.init(this);
 
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -20)).setName("Turn To Position");
-        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4760), launcher.start());
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 new RepeatCommand(
                         new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
@@ -45,8 +46,8 @@ public class DecodeAutoRedFarWait extends OpMode {
         ).setName("Move to End");
 
         Command firstSegment = new ParallelRaceCommandGroup(turnToShoot, prepareLauncher);
-        Command secondSegment = new ParallelRaceCommandGroup(launcher.start(), launchBalls, new InstantCommand(()->chassis.setMaxSpeed(.5)));
-        Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd);
+        Command secondSegment = new ParallelRaceCommandGroup(launcher.start(), launchBalls);
+        Command thirdSegment = new ParallelCommandGroup(new InstantCommand(()->chassis.setMaxSpeed(.8)), launcher.stop(), moveToEnd);
 
         commandScheduler.schedule(new SequentialCommandGroup(
                 new WaitCommand(10000), firstSegment, secondSegment, thirdSegment, new InstantCommand(()->chassis.stop())

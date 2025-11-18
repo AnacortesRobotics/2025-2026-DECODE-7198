@@ -3,12 +3,13 @@ package org.firstinspires.ftc.teamcode.Commands;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class ParallelRaceCommandGroup extends Command {
 
-    private List<Command> commands = new ArrayList<>();
+    private HashMap<Command, Boolean> commands = new HashMap<>();
 
     public ParallelRaceCommandGroup(Command... commands) {addCommands(commands);}
 
@@ -19,7 +20,7 @@ public class ParallelRaceCommandGroup extends Command {
                     double parallelCommandGroupErrorSameSubsystemInUse = 10/0;    //TODO Remove before comp!!!!
                 }
             }
-            this.commands.add(command);
+            this.commands.put(command, true);
             addRequirements(command.getRequirements());
         }
     }
@@ -27,8 +28,9 @@ public class ParallelRaceCommandGroup extends Command {
     @Override
     public void init() {
         if (!commands.isEmpty()) {
-            for (Command command : commands) {
+            for (Command command : commands.keySet()) {
                 command.init();
+                commands.put(command, false);
             }
         }
     }
@@ -39,13 +41,10 @@ public class ParallelRaceCommandGroup extends Command {
 
         boolean isDone = false;
 
-        Iterator<Command> iterator = commands.iterator();
-        while (iterator.hasNext()) {
-            Command command = iterator.next();
+        for (Command command : commands.keySet()) {
             command.run();
             if (command.isFinished()) {
                 command.stop(false);
-                iterator.remove();
                 isDone = true;
                 break;
             }
@@ -61,7 +60,7 @@ public class ParallelRaceCommandGroup extends Command {
     public void stop(boolean isInterrupted) {
         if (commands.isEmpty()) return;
 
-        for (Command command : commands) {
+        for (Command command : commands.keySet()) {
             command.stop(isInterrupted);
         }
     }

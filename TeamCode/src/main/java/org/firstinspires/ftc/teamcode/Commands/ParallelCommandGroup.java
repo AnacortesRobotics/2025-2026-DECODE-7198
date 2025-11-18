@@ -3,12 +3,13 @@ package org.firstinspires.ftc.teamcode.Commands;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class ParallelCommandGroup extends Command {
 
-    private List<Command> commands = new ArrayList<>();
+    private HashMap<Command, Boolean> commands = new HashMap<>();
 
     public ParallelCommandGroup(Command... commands) {addCommands(commands);}
 
@@ -19,7 +20,7 @@ public class ParallelCommandGroup extends Command {
                     double parallelCommandGroupErrorSameSubsystemInUse = 10/0;    //TODO Remove before comp!!!!
                 }
             }
-            this.commands.add(command);
+            this.commands.put(command, false);
             addRequirements(command.getRequirements());
         }
     }
@@ -27,8 +28,9 @@ public class ParallelCommandGroup extends Command {
     @Override
     public void init() {
         if (!commands.isEmpty()) {
-            for (Command command : commands) {
+            for (Command command : commands.keySet()) {
                 command.init();
+                commands.put(command, false);
             }
         }
     }
@@ -37,13 +39,14 @@ public class ParallelCommandGroup extends Command {
     public void run() {
         if (commands.isEmpty()) return;
 
-        Iterator<Command> iterator = commands.iterator();
-        while (iterator.hasNext()) {
-            Command command = iterator.next();
+        for (Command command : commands.keySet()) {
+            if (commands.get(command)) {
+                continue;
+            }
             command.run();
             if (command.isFinished()) {
                 command.stop(false);
-                iterator.remove();
+                commands.put(command, true);
             }
         }
 
@@ -53,7 +56,7 @@ public class ParallelCommandGroup extends Command {
     public void stop(boolean isInterrupted) {
         if (commands.isEmpty()) return;
 
-        for (Command command : commands) {
+        for (Command command : commands.keySet()) {
             command.stop(isInterrupted);
         }
     }

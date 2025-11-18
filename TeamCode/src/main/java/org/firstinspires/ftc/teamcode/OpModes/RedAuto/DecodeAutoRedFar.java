@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.*;
+import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
@@ -36,7 +37,7 @@ public class DecodeAutoRedFar extends OpMode {
         commandScheduler.init(this);
                                                                                         //-61.375                            -17.1875
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -21)).setName("Turn To Position");
-        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(4760), launcher.start());
+        Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start());
         Command launchBalls = new RepeatCommand(
                         new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
@@ -46,7 +47,7 @@ public class DecodeAutoRedFar extends OpMode {
 
         Command firstSegment = new ParallelRaceCommandGroup(turnToShoot, prepareLauncher).setName("First segment");
         Command secondSegment = new ParallelRaceCommandGroup(launchBalls, launcher.start()).setName("Second segment");
-        Command thirdSegment = new ParallelCommandGroup(new InstantCommand(()->chassis.setMaxSpeed(.5)), launcher.stop(), moveToEnd).setName("Last segment");
+        Command thirdSegment = new ParallelCommandGroup(new InstantCommand(()->chassis.setMaxSpeed(.8)), launcher.stop(), moveToEnd).setName("Last segment");
 
         commandScheduler.schedule(new SequentialCommandGroup(
                 firstSegment, secondSegment, thirdSegment, new InstantCommand(()->chassis.stop())

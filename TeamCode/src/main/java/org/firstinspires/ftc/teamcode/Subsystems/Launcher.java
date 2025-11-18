@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import org.firstinspires.ftc.teamcode.Controllers.FeedforwardController;
 import org.firstinspires.ftc.teamcode.Controllers.PIDController;
+import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
 
 public class Launcher implements Subsystem {
     private PIDController pidL;
@@ -26,9 +27,9 @@ public class Launcher implements Subsystem {
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         // Left and right from the servo side, not ramp side
-        pidL = new PIDController(0.001,0,0.001, false);
-        pidR = new PIDController(0.001,0,0.001, false);
-        feedforward = new FeedforwardController(0, 0.000175);
+        pidL = new PIDController(PIDCoefficients.LLP,PIDCoefficients.LLI,PIDCoefficients.LLD, false);
+        pidR = new PIDController(PIDCoefficients.LRP,PIDCoefficients.LRI,PIDCoefficients.LRD, false);
+        feedforward = new FeedforwardController(PIDCoefficients.LKS, PIDCoefficients.LKV);
         leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
