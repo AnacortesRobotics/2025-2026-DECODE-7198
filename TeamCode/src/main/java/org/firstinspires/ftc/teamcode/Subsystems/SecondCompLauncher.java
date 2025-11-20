@@ -17,7 +17,7 @@ public class SecondCompLauncher implements Subsystem {
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;
     private Telemetry telemetry;
-    private CRServo indexer;
+    private Servo indexer;
     private AnalogInput indexerPosition;
     public Servo loader;
     public double capturedPos;
@@ -52,7 +52,7 @@ public class SecondCompLauncher implements Subsystem {
 //        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
 //        rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        indexer = hMap.get(CRServo.class, "indexerServo");
+        indexer = hMap.get(Servo.class, "indexerServo");
         indexerPosition = hMap.get(AnalogInput.class, "indexerPOS");
         loader = hMap.get(Servo.class, "loaderServo");
         motorProgrammer = hMap.get(DcMotor.class, "testProgramer");
@@ -73,45 +73,31 @@ public class SecondCompLauncher implements Subsystem {
 
     public Command turnSpindexer(){
         indexerPid.setTarget(indexerPid.getTarget());
-        capturedPos = getServoPosition();//(indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
-        return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> indexer.setPower(0.1)
-            ),
+//        capturedPos = getServoPosition();//(indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
+        if (indexer.getPosition() == 240){
+            return new InstantCommand(
+                () -> indexer.setPosition(0)
+            );
+        }
 
-            new WaitCommand(
-                400
-            ),
-            new InstantCommand(
-                () -> indexer.setPower(0)
-            )
-        );
+        if (indexer.getPosition() == 0){
+            return new InstantCommand(
+                    () -> indexer.setPosition(120)
+            );
+        }
+
+        if (indexer.getPosition() == 120.0){
+            return new InstantCommand(
+                    () -> indexer.setPosition(240)
+            );
+        }
+
+        else {
+            return null;
+        }
+
     }
 
-    public Command testMotorProgrammer(){
-        getEncoderPosition();
-        return new SequentialCommandGroup(
-
-            new InstantCommand(
-                () -> motorProgrammer.setPower(0.2)
-            ),
-
-            new InstantCommand(
-                () -> telemetry.addData("motor position", motorProgrammer.getCurrentPosition())
-            ),
-
-            new InstantCommand(
-                () -> telemetry.addData("angle", angle)
-            ),
-
-            new InstantCommand(
-                    () -> telemetry.addData("revolutions", revolutions)
-            ),
-            new InstantCommand(
-                () -> telemetry.addData("angle normalized", angleNormalized)
-            )
-        );
-    }
 
     public void getEncoderPosition() {
         position = motorProgrammer.getCurrentPosition();
@@ -138,56 +124,56 @@ public class SecondCompLauncher implements Subsystem {
         );
     }
 
-    public Command changeServoSpeed(){
-        if (indexer.getPower() > minSpeed) {
-            return new InstantCommand(
-                    () -> indexer.setPower(indexer.getPower() + speedBump)
-            );
-        }
-        if (indexer.getPower() < maxSpeed){
-            return new InstantCommand(
-                    () -> indexer.setPower(indexer.getPower() + speedBump)
-            );
-        }
-//        return void;
-        return new InstantCommand(
-                () -> indexer.setPower(.05)
-        );
-    }
-    public Command stopTurningSpindexer(){
-        if (nowPos == 0) {
-            return new InstantCommand(
-                    () -> indexer.setPower(0)
-            );
-        }
-        else {
-            return new InstantCommand(
-                    ()-> indexer.setPower(0.05)
-            );
-        }
-    }
-    public Command setPastPos(){
-        return new InstantCommand(
-                () -> capturedPos = nowPos
-        );
-    }
+//    public Command changeServoSpeed(){
+//        if (indexer.getPower() > minSpeed) {
+//            return new InstantCommand(
+//                    () -> indexer.setPower(indexer.getPower() + speedBump)
+//            );
+//        }
+//        if (indexer.getPower() < maxSpeed){
+//            return new InstantCommand(
+//                    () -> indexer.setPower(indexer.getPower() + speedBump)
+//            );
+//        }
+////        return void;
+//        return new InstantCommand(
+//                () -> indexer.setPower(.05)
+//        );
+//    }
+//    public Command stopTurningSpindexer(){
+//        if (nowPos == 0) {
+//            return new InstantCommand(
+//                    () -> indexer.setPosition(0)
+//            );
+//        }
+//        else {
+//            return new InstantCommand(
+//                    ()-> indexer.setPower(0.05)
+//            );
+//        }
+//    }
+//    public Command setPastPos(){
+//        return new InstantCommand(
+//                () -> capturedPos = nowPos
+//        );
+//    }
     public enum Direction {
         FORWARD,
         REVERSE
     }
 
-    public double getServoPosition(){
-        if (indexerPosition == null) {
-            capturedPos = 0;
-        }
-        else {
-//            capturedPos = nowPos;
-            telemetry.addData("past position",capturedPos);
-        }
-        nowPos = (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
-        return nowPos;
-        //        return (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
-    }
+//    public double getServoPosition(){
+//        if (indexerPosition == null) {
+//            capturedPos = 0;
+//        }
+//        else {
+////            capturedPos = nowPos;
+//            telemetry.addData("past position",capturedPos);
+//        }
+//        nowPos = (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
+//        return nowPos;
+//        //        return (indexerPosition.getVoltage() / 3.3) * (direction.equals(Direction.REVERSE) ? -360 : 360);
+//    }
 
     public void setPower(double power){
         rightMotor.setPower(power);

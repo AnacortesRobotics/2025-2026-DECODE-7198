@@ -29,7 +29,7 @@ public class Limelight {
         telemetry.addData("Pipeline", "Index: %d, Type: %s",
                 status.getPipelineIndex(), status.getPipelineType());
     }
-    /*
+
     public LLResultTypes.FiducialResult getAprilTag(){
         LLResult result = limelight.getLatestResult();
         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
@@ -39,7 +39,7 @@ public class Limelight {
             return null;
         }
     }
-    */
+
     public LLResultTypes.ColorResult getColorTrackingResults() {
         LLResult result = limelight.getLatestResult();
         if (result.isValid()) {
