@@ -4,9 +4,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -27,6 +25,8 @@ public class LauncherTeleop extends OpMode {
 
     private RevColorSensorV3 colorSensor;
 
+    private DigitalChannel magnet;
+
 //    private CRServo axon;
 //    private AnalogInput axonPos;
 //
@@ -38,6 +38,8 @@ public class LauncherTeleop extends OpMode {
 
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSens");
 
+        magnet = hardwareMap.get(DigitalChannelImpl.class, "magnet");
+
 //        axon = hardwareMap.get(CRServo.class, "indexerServo");
 //        axonPos = hardwareMap.get(AnalogInput.class, "indexerPOS");
 
@@ -48,8 +50,7 @@ public class LauncherTeleop extends OpMode {
 //        commandScheduler.init(this);
 //
 //        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->axon.setPower(.2)));
-//        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->axon.setPower(0)));
-
+//        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->axon.setPower(0));
 
         //        chassis = new Chassis(hardwareMap, telemetry, false);
 //
@@ -74,10 +75,11 @@ public class LauncherTeleop extends OpMode {
     public void loop() {
         //commandScheduler.run();
 
-        telemetry.addData("Red", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue", colorSensor.blue());
+//        telemetry.addData("Red", colorSensor.red());
+//        telemetry.addData("Green", colorSensor.green());
+//        telemetry.addData("Blue", colorSensor.blue());
 
+        telemetry.addData("magnet", magnet.getState());
 
 //        if (lastPose > (axonPos.getVoltage() / axonPos.getMaxVoltage() * 180) + .3) {
 //            axonPose += 180;
