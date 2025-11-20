@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Commands;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.*;
@@ -39,6 +40,9 @@ public class CommandScheduler {
 
     private Telemetry telemetry;
 
+    //private ArrayList<String> commandRunDebug = new ArrayList<String>();
+    //private ElapsedTime runTime = new ElapsedTime();
+
     private OpMode opMode;
     private Gamepad gamepad1;
     private Gamepad gamepad2;
@@ -65,7 +69,7 @@ public class CommandScheduler {
         this.gamepad2 = opMode.gamepad2;
         lastGamepad1 = new Gamepad();
         lastGamepad2 = new Gamepad();
-
+        //runTime.reset();
     }
     public Trigger getTrigger(GamepadInput input, GamepadIndex index){
         if (index == GamepadIndex.PRIMARY){
@@ -187,7 +191,9 @@ public class CommandScheduler {
         }
 
         Set<Command> commandsToEnd = new HashSet<>();
-        for (Command command : activeCommands) {
+        Iterator<Command> iterator = activeCommands.iterator();
+        while (iterator.hasNext()){
+            Command command = iterator.next();
             command.run();
             if (command.isFinished()) {
                 commandsToEnd.add(command);
@@ -249,6 +255,7 @@ public class CommandScheduler {
 
     private void endCommand(Command command, boolean interrupted) {
         if (!activeCommands.contains(command)) return;
+        //commandRunDebug.add(String.format("Cmd: %s ,ended : %.3f s", command.getName(), runTime.time()));
 
         Set<Subsystem> requirements = command.getRequirements();
 
@@ -277,6 +284,9 @@ public class CommandScheduler {
         telemetry.addData("Scheduled commands", getCommandNames(scheduledCommands));
         telemetry.addData("Active commands", getCommandNames(activeCommands));
         telemetry.addData("Active subsystems && commands", getSubsystemCommands(activeSubsystems));
+//        for (String s : commandRunDebug) {
+//            telemetry.addLine(s);
+//        }
     }
 
     private String getCommandNames(Set<Command> commands) {

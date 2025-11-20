@@ -9,14 +9,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
-import org.firstinspires.ftc.teamcode.LinearTrajectory;
-import org.firstinspires.ftc.teamcode.PIDController;
+import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
+import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class Chassis implements Subsystem {
 
@@ -35,6 +38,8 @@ public class Chassis implements Subsystem {
 
     private GoBildaPinpointDriver odo;
     private Telemetry telemetry;
+
+    private double holonomicOffset = 0;
 
     public PIDController pidForward = new PIDController(PIDCoefficients.XP, PIDCoefficients.XI, PIDCoefficients.XD, false);
     public PIDController pidHorizontal = new PIDController(PIDCoefficients.YP, PIDCoefficients.YI, PIDCoefficients.YD, false);
@@ -95,10 +100,14 @@ public class Chassis implements Subsystem {
     }
 
     public void mecanumDriveFieldCentric(double vertical, double horizontal, double rotate) {
-        double heading = -odo.getHeading(AngleUnit.RADIANS);
+        double heading = -odo.getHeading(AngleUnit.RADIANS) + holonomicOffset;
         double robotVert = Math.sin(heading) * horizontal + Math.cos(heading) * vertical;
         double robotHoriz = Math.cos(heading) * horizontal - Math.sin(heading) * vertical;
         mecanumDrive(robotVert, robotHoriz, rotate);
+    }
+
+    public void setHolonomicOffset(double offsetPI) {
+        holonomicOffset = offsetPI;
     }
 
     public void updateOdo() {
@@ -123,19 +132,30 @@ public class Chassis implements Subsystem {
                 Math.abs(odo.getPosition().getHeading(AngleUnit.DEGREES) - pidRotate.getTarget()) < 2;
     }
 
+    public boolean isCloseToTarget() {
+        return Math.abs(odo.getPosition().getX(DistanceUnit.INCH) - pidForward.getTarget()) < 24 &&
+                Math.abs(odo.getPosition().getY(DistanceUnit.INCH) - pidHorizontal.getTarget()) < 24 &&
+                Math.abs(odo.getPosition().getHeading(AngleUnit.DEGREES) - pidRotate.getTarget()) < 180;
+    }
+
     private void update() {
+        double lastOffset = holonomicOffset;
+        holonomicOffset = 0;
         mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
                 pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
                 pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES))
                 );
+        holonomicOffset = lastOffset;
     }
 
     private void updateTrajectory() {
+        double lastOffset = holonomicOffset;
+        holonomicOffset = 0;
         setTarget(trajectory.getLookaheadPoint(odo.getPosition(), 6));
         mecanumDriveFieldCentric(pidForward.update(odo.getPosition().getX(DistanceUnit.INCH)),
                 pidHorizontal.update(odo.getPosition().getY(DistanceUnit.INCH)),
                 pidRotate.update(odo.getPosition().getHeading(AngleUnit.DEGREES)));
-
+        holonomicOffset = lastOffset;
     }
 
     public void setPath(Pose2D... pose) {
@@ -154,6 +174,19 @@ public class Chassis implements Subsystem {
     public Command driveTrajectory(Pose2D... path) {
         return new FunctionalCommand(
                 ()-> setPath(path),
+                this::updateTrajectory,
+                (interrupted)->stop(),
+                this::isAtTarget,
+                this).setName("Drive trajectory");
+    }
+
+    public Command driveTrajectory(Supplier<Pose2D> startPos, Pose2D... path) {
+        Pose2D[] poses = new Pose2D[path.length + 1];
+        poses[0] = startPos.get();
+        System.arraycopy(path, 0, poses, 1, path.length);
+
+        return new FunctionalCommand(
+                ()-> setPath(poses),
                 this::updateTrajectory,
                 (interrupted)->stop(),
                 this::isAtTarget,
@@ -207,10 +240,14 @@ public class Chassis implements Subsystem {
         maxSpeed = speed;
     }
 
-    public void updateTelemetry() {
-        trajectory.updateTelemetry();
-        telemetry.addData("Target point", pidForward.getTarget() + ", " + pidHorizontal.getTarget() + ", " + pidRotate.getTarget());
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
 
+    public void updateTelemetry() {
+        telemetry.addData("Target point", pidForward.getTarget() + ", " + pidHorizontal.getTarget() + ", " + pidRotate.getTarget());
+        telemetry.addData("Max speed", maxSpeed);
+        trajectory.updateTelemetry();
     }
 
 }
