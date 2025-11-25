@@ -5,7 +5,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Commands.*;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.PIDController;
+import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 
 import static java.lang.Thread.sleep;
 
