@@ -21,6 +21,7 @@ public class LimelightPurpleArtifact implements Subsystem {
     private boolean isShootingMode;
     private LLResult limelightResult;
 
+
     public LimelightPurpleArtifact(HardwareMap hwM, Telemetry telemetry) {
         this.telemetry = telemetry;
         limelight = hwM.get(Limelight3A.class, "limelight");
