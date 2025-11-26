@@ -25,7 +25,7 @@ public class LimelightArtifact implements Subsystem {
         this.telemetry = telemetry;
         limelight = hwM.get(Limelight3A.class, "limelight");
         // pitchServo = hwM.get(Servo.class, "limelightServo");
-        this.limelight.pipelineSwitch(pipelineIndex);
+        limelight.pipelineSwitch(pipelineIndex);
         limelight.start();
 
     }
@@ -48,6 +48,10 @@ public class LimelightArtifact implements Subsystem {
         if(tag == null) return 0.0;
         return (tag.getTargetXDegrees());
 
+    }
+
+    public void changePipeline(int pipeline) {
+        limelight.pipelineSwitch(pipeline);
     }
 
     public void update(){

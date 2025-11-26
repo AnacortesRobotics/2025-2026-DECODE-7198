@@ -38,7 +38,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.Subsystems.Limelight;
 import org.firstinspires.ftc.teamcode.Subsystems.LimelightArtifact;
 
 
@@ -70,17 +69,17 @@ public class VisionTest extends LinearOpMode {
 
     DcMotor leftdrive = null;
     DcMotor rightdrive = null;
-    LimelightArtifact limelightGreen;
+    LimelightArtifact limelightInfo;
     LimelightArtifact limelightPurple;
     private Servo servo = null;
     boolean last = false;
     boolean autoTurnState = false;
+    private boolean purpleTracking = false;
+    private boolean greenTracking = false;
     double turn;
     public LLResultTypes.ColorResult greenColorResult;
     public LLResultTypes.ColorResult purpleColorResult;
-
-
-
+    public LLResultTypes.ColorResult trackingResult;
 
     void drive (double forward,double turning)
     {
@@ -92,8 +91,7 @@ public class VisionTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
 
-        limelightGreen = new LimelightArtifact(hardwareMap, telemetry, 1);
-//        limelightPurple = new LimelightArtifact(hardwareMap, telemetry, 2);
+        limelightInfo = new LimelightArtifact(hardwareMap, telemetry, 1);
 
 //        limelight.setPipeline(1);
 
@@ -126,24 +124,39 @@ public class VisionTest extends LinearOpMode {
             if (gamepad1.b) {
                 autoTurnState = false;
             }
+            if (gamepad1.right_bumper) {
+                purpleTracking = false;
+                greenTracking = true;
+                telemetry.addData("right", "works");
+                limelightInfo.changePipeline(1);
+
+            }
+            if (gamepad1.left_bumper) {
+                greenTracking = false;
+                purpleTracking = true;
+                telemetry.addData("left", "works");
+                limelightInfo.changePipeline(2);
+
+            }
             if (autoTurnState){
+                telemetry.addData("autoTurnState", "is true");
+                telemetry.addData("greenTracking", greenTracking);
+                telemetry.addData("purpleTracking", purpleTracking);
 
-                greenColorResult = limelightGreen.getColorTrackingResults();
-//                purpleColorResult = limelightPurple.getColorTrackingResults();
+                trackingResult = limelightInfo.getColorTrackingResults();
 
-
-                if (greenColorResult != null) {
-                    double greenArea = greenColorResult.getTargetArea();
+                telemetry.addData("trackingResult", trackingResult);
+                if (trackingResult != null) {
+                    double trackingResultArea = trackingResult.getTargetArea();
 //                double purpleArea = purpleColorResult.getTargetArea();
 //                turn = 0;
 
-                    if (greenArea > 0.004) {
-                        telemetry.addData("green colorresult area", greenArea);
+                    telemetry.addData("colorresult area", trackingResultArea);
 
-//                    telemetry.addData("purple colorresult area", purpleArea);
-
-                        if (Math.abs(greenColorResult.getTargetXDegrees()) > 10) {
-                            turn = .025 * (greenColorResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
+                    if (trackingResultArea > 0.0035) {
+                        telemetry.addData("colorresult status", "is > 0.0035");
+                        if (Math.abs(trackingResult.getTargetXDegrees()) > 7.5) {
+                            turn = .025 * (trackingResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
                             drive(gamepad1.left_stick_y, turn);
                         }
 //                    telemetry.addData("distance value", colorresult.);
