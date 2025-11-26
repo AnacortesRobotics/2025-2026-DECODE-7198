@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.Subsystems.Limelight;
+import org.firstinspires.ftc.teamcode.Subsystems.LimelightArtifact;
 
 
 /*
@@ -69,12 +70,14 @@ public class VisionTest extends LinearOpMode {
 
     DcMotor leftdrive = null;
     DcMotor rightdrive = null;
-    Limelight limelight;
+    LimelightArtifact limelightGreen;
+    LimelightArtifact limelightPurple;
     private Servo servo = null;
     boolean last = false;
     boolean autoTurnState = false;
     double turn;
-    public LLResultTypes.ColorResult colorresult;
+    public LLResultTypes.ColorResult greenColorResult;
+    public LLResultTypes.ColorResult purpleColorResult;
 
 
 
@@ -89,9 +92,10 @@ public class VisionTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
 
-        limelight = new Limelight(hardwareMap, telemetry);
+        limelightGreen = new LimelightArtifact(hardwareMap, telemetry, 1);
+//        limelightPurple = new LimelightArtifact(hardwareMap, telemetry, 2);
 
-        limelight.setPipeline(1);
+//        limelight.setPipeline(1);
 
         telemetry.setMsTransmissionInterval(11);
 
@@ -123,20 +127,29 @@ public class VisionTest extends LinearOpMode {
                 autoTurnState = false;
             }
             if (autoTurnState){
-                colorresult = limelight.getColorTrackingResults();
-//                turn = 0;
-                if (colorresult != null) {
-                    double area = colorresult.getTargetArea();
-                    telemetry.addData("colorresult area", area);
 
-                    if (Math.abs(colorresult.getTargetXDegrees()) > 5) {
-                        turn = .025*(colorresult.getTargetXDegrees()/*/Math.sqrt(area)*/);
-                        drive(gamepad1.left_stick_y, turn);
-                    }
+                greenColorResult = limelightGreen.getColorTrackingResults();
+//                purpleColorResult = limelightPurple.getColorTrackingResults();
+
+
+                if (greenColorResult != null) {
+                    double greenArea = greenColorResult.getTargetArea();
+//                double purpleArea = purpleColorResult.getTargetArea();
+//                turn = 0;
+
+                    if (greenArea > 0.004) {
+                        telemetry.addData("green colorresult area", greenArea);
+
+//                    telemetry.addData("purple colorresult area", purpleArea);
+
+                        if (Math.abs(greenColorResult.getTargetXDegrees()) > 10) {
+                            turn = .025 * (greenColorResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
+                            drive(gamepad1.left_stick_y, turn);
+                        }
 //                    telemetry.addData("distance value", colorresult.);
-                }
-                else {
-                    drive(gamepad1.left_stick_y, 0);
+                    } else {
+                        drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+                    }
                 }
 //                if (colorresult.getTargetArea() > 2){
 //

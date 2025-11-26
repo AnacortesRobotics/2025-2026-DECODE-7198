@@ -14,20 +14,19 @@ import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import java.util.List;
 
 
-public class LimelightGreenArtifact implements Subsystem {
+public class LimelightArtifact implements Subsystem {
     private Limelight3A limelight;
     private Telemetry telemetry;
     private Servo pitchServo;
     private boolean isShootingMode;
     private LLResult limelightResult;
 
-
-    public LimelightGreenArtifact(HardwareMap hwM, Telemetry telemetry) {
+    public LimelightArtifact(HardwareMap hwM, Telemetry telemetry, int pipelineIndex) {
         this.telemetry = telemetry;
         limelight = hwM.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(1);
+        // pitchServo = hwM.get(Servo.class, "limelightServo");
+        this.limelight.pipelineSwitch(pipelineIndex);
         limelight.start();
-        pitchServo = hwM.get(Servo.class, "limelightServo");
 
     }
 
@@ -55,25 +54,25 @@ public class LimelightGreenArtifact implements Subsystem {
         limelightResult = limelight.getLatestResult();
     }
 
-    public Command shootingMode() {
-        if(isShootingMode) {
-            return new InstantCommand(
-                    () -> pitchServo.setPosition(.5)
-            );
-        }
-        if(!isShootingMode) {
-            return new InstantCommand(
-                    () -> pitchServo.setPosition(0)
-            );
+//    public Command shootingMode() {
+//        if(isShootingMode) {
+//            return new InstantCommand(
+//                    () -> pitchServo.setPosition(.5)
+//            );
+//        }
+//        if(!isShootingMode) {
+//            return new InstantCommand(
+//                    () -> pitchServo.setPosition(0)
+//            );
+//
+//        }
+//        else return null;
+//    }
 
-        }
-        else return null;
-    }
-
-    public void updateShootingMode(boolean shootingMode) {
-        isShootingMode = shootingMode;
-        shootingMode();
-    }
+//    public void updateShootingMode(boolean shootingMode) {
+//        isShootingMode = shootingMode;
+//        shootingMode();
+//    }
 
     public void printTelemetry() {
         LLStatus status = limelight.getStatus();

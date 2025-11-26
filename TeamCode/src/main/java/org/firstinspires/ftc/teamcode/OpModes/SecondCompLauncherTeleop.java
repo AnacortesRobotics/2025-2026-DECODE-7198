@@ -29,21 +29,21 @@ public class SecondCompLauncherTeleop extends OpMode {
 //                .getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
 //                .onJustPressed(secondCompLauncher.stop());
         commandScheduler
-                .getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
-                .onPressed(secondCompLauncher.changeServoSpeed());
+                .getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY);
+//                .onPressed(secondCompLauncher.changeServoSpeed());
         commandScheduler
-                .getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
-                .onPressed(secondCompLauncher.setPastPos());
+                .getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY);
+//                .onPressed(secondCompLauncher.setPastPos());
         commandScheduler
-                .getTrigger(CommandScheduler.GamepadInput.Y_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
-                .onJustPressed(secondCompLauncher.stopTurningSpindexer());
+                .getTrigger(CommandScheduler.GamepadInput.Y_BUTTON, CommandScheduler.GamepadIndex.PRIMARY);
+//                .onJustPressed(secondCompLauncher.stopTurningSpindexer());
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.X_BUTTON, CommandScheduler.GamepadIndex.PRIMARY)
                 .onJustPressed(secondCompLauncher.turnSpindexer());
 
         commandScheduler
-                .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
-                .onPressed(secondCompLauncher.testMotorProgrammer());
+                .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY);
+//                .onPressed(secondCompLauncher.testMotorProgrammer());
         commandScheduler
                 .getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY)
                 .onReleased(secondCompLauncher.stopMotorProgrammer());
@@ -64,7 +64,7 @@ public class SecondCompLauncherTeleop extends OpMode {
 //        telemetry.addData("left rpm", SecondCompLauncher.getCurrentRPM(Launcher.LauncherWheel.LEFT));
 //        telemetry.addData("right rpm", SecondCompLauncher.getCurrentRPM(Launcher.LauncherWheel.RIGHT));
 //        telemetry.addData("Is it working ", SecondCompLauncher.isSpinning());
-        telemetry.addData("servo position (s/b nowPos)", secondCompLauncher.getServoPosition());
+//        telemetry.addData("servo position (s/b nowPos)", secondCompLauncher.getServoPosition());
         telemetry.addData("pastPos outside:", secondCompLauncher.capturedPos);
         telemetry.addData("nowPos outside:", secondCompLauncher.nowPos);
 
