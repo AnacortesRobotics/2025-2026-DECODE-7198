@@ -10,8 +10,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
-
+import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import java.util.List;
+import java.util.ArrayList;
 
 
 
@@ -21,6 +22,11 @@ public class Limelight implements Subsystem {
     private Servo pitchServo;
     private boolean isShootingMode;
     private LLResult limelightResult;
+    boolean greenTracking;
+    Chassis chassis;
+
+
+
 
     public Limelight(HardwareMap hwM, Telemetry telemetry) {
         this.telemetry = telemetry;
@@ -55,19 +61,47 @@ public class Limelight implements Subsystem {
         limelightResult = limelight.getLatestResult();
     }
 
-    public Command shootingMode() {
+    public void setServoPosition(double position) {
+        pitchServo.setPosition(position);
+    }
+
+    public List<Boolean> artifactOrder() {
+        LLResultTypes.FiducialResult aprilTag = getAprilTag();
+        ArrayList<Boolean> order = new ArrayList<Boolean>();
+        if (aprilTag == null) {
+            return new ArrayList<>();
+        } else if (aprilTag.getFiducialId() == 21) {
+            order.add(true);
+            order.add(false);
+            order.add(false);
+        } else if (aprilTag.getFiducialId() == 22) {
+            order.add(false);
+            order.add(true);
+            order.add(false);
+        } else if (aprilTag.getFiducialId() == 23) {
+            order.add(false);
+            order.add(false);
+            order.add(true);
+        }
+        return order;
+    }
+
+    public void shootingMode() {
         if(isShootingMode) {
-            return new InstantCommand(
-                    () -> pitchServo.setPosition(.5)
-            );
+            setPipeline(0);
+            pitchServo.setPosition(0);
         }
         if(!isShootingMode) {
-            return new InstantCommand(
-                    () -> pitchServo.setPosition(0)
-            );
-
+            pitchServo.setPosition(1);
+            if (greenTracking) {
+                setPipeline(1);
+                greenTracking = true;
+            }
+            else if (!greenTracking) {
+                setPipeline(2);
+                greenTracking = false;
+            }
         }
-        else return null;
     }
 
     public void updateShootingMode(boolean shootingMode) {
@@ -104,6 +138,11 @@ public class Limelight implements Subsystem {
             }
         }
         return null;
+    }
+
+    public Command turnToArtifact() {
+        return chassis.autoTurn(()->0, ()->0, getAngleOffSet(true)); //TODO change to isRed
+
     }
 
     public void setPipeline(int pipeline){

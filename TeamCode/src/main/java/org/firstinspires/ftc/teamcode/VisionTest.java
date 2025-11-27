@@ -38,6 +38,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.LimelightArtifact;
 
 
@@ -66,20 +68,19 @@ import org.firstinspires.ftc.teamcode.Subsystems.LimelightArtifact;
 @TeleOp(name = "oblisk test", group = "Sensor")
 
 public class VisionTest extends LinearOpMode {
-
     DcMotor leftdrive = null;
     DcMotor rightdrive = null;
     LimelightArtifact limelightInfo;
-    LimelightArtifact limelightPurple;
+
     private Servo servo = null;
     boolean last = false;
     boolean autoTurnState = false;
     private boolean purpleTracking = false;
     private boolean greenTracking = false;
     double turn;
-    public LLResultTypes.ColorResult greenColorResult;
-    public LLResultTypes.ColorResult purpleColorResult;
     public LLResultTypes.ColorResult trackingResult;
+    Chassis chassis;
+    CommandScheduler commandScheduler;
 
     void drive (double forward,double turning)
     {
@@ -90,8 +91,9 @@ public class VisionTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException
     {
+        commandScheduler = CommandScheduler.getInstance();
 
-        limelightInfo = new LimelightArtifact(hardwareMap, telemetry, 1);
+        limelightInfo  = new LimelightArtifact(hardwareMap, telemetry, 1);
 
 //        limelight.setPipeline(1);
 
@@ -112,6 +114,9 @@ public class VisionTest extends LinearOpMode {
         leftdrive.setDirection(DcMotorSimple.Direction.FORWARD);
         rightdrive = hardwareMap.get(DcMotor.class, "rightdrive");
         rightdrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        commandScheduler = CommandScheduler.getInstance();
+        commandScheduler.init(this);
+
 
 
         waitForStart();
@@ -125,56 +130,53 @@ public class VisionTest extends LinearOpMode {
                 autoTurnState = false;
             }
             if (gamepad1.right_bumper) {
-                purpleTracking = false;
-                greenTracking = true;
                 telemetry.addData("right", "works");
                 limelightInfo.changePipeline(1);
 
             }
             if (gamepad1.left_bumper) {
-                greenTracking = false;
-                purpleTracking = true;
                 telemetry.addData("left", "works");
                 limelightInfo.changePipeline(2);
 
             }
             if (autoTurnState){
-                telemetry.addData("autoTurnState", "is true");
-                telemetry.addData("greenTracking", greenTracking);
-                telemetry.addData("purpleTracking", purpleTracking);
-
+//                telemetry.addData("autoTurnState", "is true");
+//                telemetry.addData("greenTracking", greenTracking);
+//                telemetry.addData("purpleTracking", purpleTracking);
                 trackingResult = limelightInfo.getColorTrackingResults();
-
-                telemetry.addData("trackingResult", trackingResult);
-                if (trackingResult != null) {
-                    double trackingResultArea = trackingResult.getTargetArea();
-//                double purpleArea = purpleColorResult.getTargetArea();
-//                turn = 0;
-
-                    telemetry.addData("colorresult area", trackingResultArea);
-
-                    if (trackingResultArea > 0.0035) {
-                        telemetry.addData("colorresult status", "is > 0.0035");
-                        if (Math.abs(trackingResult.getTargetXDegrees()) > 7.5) {
-                            turn = .025 * (trackingResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
-                            drive(gamepad1.left_stick_y, turn);
-                        }
-//                    telemetry.addData("distance value", colorresult.);
-                    } else {
-                        drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
-                    }
-                }
+                commandScheduler.schedule(chassis.autoTurn(()->0, ()->0, trackingResult.getTargetXDegrees()));
+//                telemetry.addData("trackingResult", trackingResult);
+//                if (trackingResult != null) {
+//                    double trackingResultArea = trackingResult.getTargetArea();
+////                double purpleArea = purpleColorResult.getTargetArea();
+////                turn = 0;
+//
+//                    telemetry.addData("colorresult area", trackingResultArea);
+//
+//                    if (trackingResultArea > 0.0035) {
+//                        telemetry.addData("colorresult status", "is > 0.0035");
+//                        if (Math.abs(trackingResult.getTargetXDegrees()) > 7.5) {
+//                            turn = .025 * (trackingResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
+//                            drive(gamepad1.left_stick_y, turn);
+//                        }
+////                    telemetry.addData("distance value", colorresult.);
+//                    }
+//                    else {
+//                        drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+//                    }
+                commandScheduler.run();
+            }
 //                if (colorresult.getTargetArea() > 2){
 //
 //                }
 
             }
-            else {
+//            else {
 //                telemetry.addData("distance value", colorresult.getTargetArea());
                 drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
-            }
+//            }
 
             telemetry.update();
         }
-    }
+//    }
 }

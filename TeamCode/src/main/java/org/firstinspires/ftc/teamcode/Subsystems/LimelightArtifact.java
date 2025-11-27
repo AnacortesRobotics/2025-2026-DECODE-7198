@@ -20,6 +20,10 @@ public class LimelightArtifact implements Subsystem {
     private Servo pitchServo;
     private boolean isShootingMode;
     private LLResult limelightResult;
+    LimelightArtifact limelightInfo;
+    public LLResultTypes.ColorResult trackingResult;
+
+
 
     public LimelightArtifact(HardwareMap hwM, Telemetry telemetry, int pipelineIndex) {
         this.telemetry = telemetry;
@@ -107,6 +111,42 @@ public class LimelightArtifact implements Subsystem {
             }
         }
         return null;
+    }
+
+    public void trackGreen () {
+        limelightInfo.changePipeline(1);
+
+    }
+    public void trackPurple () {
+        limelightInfo.changePipeline(2);
+    }
+    public void trackAprilTag () {
+        limelightInfo.changePipeline(0);
+    }
+    public double turnToArtifact () {
+//                telemetry.addData("autoTurnState", "is true");
+//                telemetry.addData("greenTracking", greenTracking);
+//                telemetry.addData("purpleTracking", purpleTracking);
+
+        trackingResult = limelightInfo.getColorTrackingResults();
+
+        telemetry.addData("trackingResult", trackingResult);
+        if (trackingResult != null) {
+            double trackingResultArea = trackingResult.getTargetArea();
+//                double purpleArea = purpleColorResult.getTargetArea();
+//                turn = 0;
+
+            telemetry.addData("colorresult area", trackingResultArea);
+
+            if (trackingResultArea > 0.0035) {
+                telemetry.addData("colorresult status", "is > 0.0035");
+                if (Math.abs(trackingResult.getTargetXDegrees()) > 7.5) {
+                    return trackingResult.getTargetXDegrees();
+                }
+//                    telemetry.addData("distance value", colorresult.);
+            }
+        }
+        return 0;
     }
 
     public void setPipeline(int pipeline){
