@@ -16,9 +16,9 @@ public class ParallelCommandGroup extends Command {
     public final void addCommands(Command... commands) {
         for (Command command : commands) {
             for (Subsystem requirement : command.getRequirements()) {
-                if (getRequirements().contains(requirement)) {
-                    double parallelCommandGroupErrorSameSubsystemInUse = 10/0;    //TODO Remove before comp!!!!
-                }
+//                if (getRequirements().contains(requirement)) {
+//                    double parallelCommandGroupErrorSameSubsystemInUse = 10/0;
+//                }
             }
             this.commands.put(command, false);
             addRequirements(command.getRequirements());

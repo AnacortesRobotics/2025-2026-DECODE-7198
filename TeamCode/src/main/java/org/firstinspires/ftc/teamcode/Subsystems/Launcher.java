@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
@@ -13,26 +14,29 @@ import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
 
 public class Launcher implements Subsystem {
-    private PIDController pidL;
-    private PIDController pidR;
+    //    private PIDController pidL;
+//    private PIDController pidR;
+    private PIDController pid;
     private FeedforwardController feedforward;
     private DcMotorEx leftMotor;
     private DcMotorEx rightMotor;
     private Telemetry telemetry;
     private double targetRPM = 0;
 
+    private long motorWar = 0;
+
 
     private final int TICKS_PER_REVOLUTION = 28;
     private boolean isSpinningFlag = false;
 
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
-        // Left and right from the servo side, not ramp side
-        pidL = new PIDController(PIDCoefficients.LLP,PIDCoefficients.LLI,PIDCoefficients.LLD, false);
-        pidR = new PIDController(PIDCoefficients.LRP,PIDCoefficients.LRI,PIDCoefficients.LRD, false);
+        pid = new PIDController(PIDCoefficients.LP, PIDCoefficients.LI, PIDCoefficients.LD, false);
+//        pidL = new PIDController(PIDCoefficients.LLP,PIDCoefficients.LLI,PIDCoefficients.LLD, false);
+//        pidR = new PIDController(PIDCoefficients.LRP,PIDCoefficients.LRI,PIDCoefficients.LRD, false);
         feedforward = new FeedforwardController(PIDCoefficients.LKS, PIDCoefficients.LKV);
-        leftMotor = hMap.get(DcMotorEx.class, "flywheelLeft");
+        leftMotor = hMap.get(DcMotorEx.class, "launcherLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightMotor = hMap.get(DcMotorEx.class, "flywheelRight");
+        rightMotor = hMap.get(DcMotorEx.class, "launcherRight");
         rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         this.telemetry = telemetry;
     }
@@ -46,15 +50,19 @@ public class Launcher implements Subsystem {
         ).setInterruptable(true);
     }
     private void setTargetRPM(double rpm){
-        pidL.setTarget(rpm);
-        pidR.setTarget(rpm);
+        pid.setTarget(rpm);
+//        pidL.setTarget(rpm);
+//        pidR.setTarget(rpm);
         targetRPM = rpm;
     }
     private void update(){
         double leftrpm = getCurrentRPM(LauncherWheel.LEFT);
-        leftMotor.setPower(pidL.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
+        //leftMotor.setPower(pidL.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
         double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
-        rightMotor.setPower(pidR.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
+        //rightMotor.setPower(pidR.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
+
+        leftMotor.setPower(pid.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
+        rightMotor.setPower(pid.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
         isSpinningFlag = true;
     }
     public enum LauncherWheel {
@@ -75,8 +83,9 @@ public class Launcher implements Subsystem {
     }
     public void stopPid() {
         isSpinningFlag = false;
-        pidL.stop();
-        pidR.stop();
+//        pidL.stop();
+//        pidR.stop();
+        pid.stop();
         setPower(0);
     }
     public Command start(){
@@ -101,6 +110,17 @@ public class Launcher implements Subsystem {
     public void updateTelemetry() {
         telemetry.addData("Left wheel rpm", getCurrentRPM(LauncherWheel.LEFT));
         telemetry.addData("Right wheel rpm", getCurrentRPM(LauncherWheel.RIGHT));
+        telemetry.addData("Left wheel current", leftMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Right wheel current", rightMotor.getCurrent(CurrentUnit.AMPS));
+    }
+
+    public boolean areMotorsFighting() {
+        if (leftMotor.getCurrent(CurrentUnit.AMPS) > 9 && rightMotor.getCurrent(CurrentUnit.AMPS) > 9 && motorWar == -1) {
+            motorWar = System.currentTimeMillis();
+        } else if (leftMotor.getCurrent(CurrentUnit.AMPS) <= 9 && rightMotor.getCurrent(CurrentUnit.AMPS) <= 9 && motorWar != -1) {
+            motorWar = -1;
+        }
+        return System.currentTimeMillis() - motorWar > 1000 && motorWar != -1;
     }
 
 }
