@@ -55,7 +55,7 @@ public class DecodeTeleOp extends OpMode {
                 : new Pose2D(DistanceUnit.INCH, -55, -51, AngleUnit.DEGREES, 80)).setInterruptable(true),
                 new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive to load");
         Command driveToShootFar = new ParallelCommandGroup(chassis.driveToPosition(isRed ?
-                new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -20) :
+                new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -21) :
                 new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setInterruptable(true),
                 new FunctionalCommand(()->{}, ()->{if (chassis.isCloseToTarget()) {chassis.setMaxSpeed(.5);}}, (interrupted)->{}, ()->false)).setName("Drive To shoot far");
         Command driveToShootMiddle = new ParallelCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, isRed ? -52 : 52)),

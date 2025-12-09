@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.RedAuto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
+@Disabled
 @Autonomous
 public class DecodeAutoRedDepotWait extends OpMode {
 
@@ -42,7 +44,7 @@ public class DecodeAutoRedDepotWait extends OpMode {
         Command launchBalls = new SequentialCommandGroup(
                 //new WaitCommand(800),
                 new RepeatCommand(
-                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
+                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(RobotCoefficients.WAIT_TIME)), 4)).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
         Command moveToEnd = chassis.driveTrajectory(
                 new Pose2D(DistanceUnit.INCH, 12, -14, AngleUnit.DEGREES, -55),

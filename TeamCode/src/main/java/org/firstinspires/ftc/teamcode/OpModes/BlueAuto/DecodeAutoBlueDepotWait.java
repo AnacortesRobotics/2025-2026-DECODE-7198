@@ -41,7 +41,7 @@ public class DecodeAutoBlueDepotWait extends OpMode {
         Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 new RepeatCommand(
-                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
+                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(RobotCoefficients.WAIT_TIME)), 4)).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
         Command moveToEnd = chassis.driveTrajectory(
                 new Pose2D(DistanceUnit.INCH, 12, 14, AngleUnit.DEGREES, 55),

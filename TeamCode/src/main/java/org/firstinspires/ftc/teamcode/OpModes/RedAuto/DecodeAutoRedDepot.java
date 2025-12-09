@@ -36,33 +36,36 @@ public class DecodeAutoRedDepot extends OpMode {
         commandScheduler.init(this);
 
         Command firstDriveSegment = chassis.driveTrajectory(
-                new Pose2D(DistanceUnit.INCH, 72.3 - chassis.ROBOT_LENGTH / 2,  -47 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 175),
-                new Pose2D(DistanceUnit.INCH, 12, -14, AngleUnit.DEGREES, -55)).setName("First Drive Segment");
+                new Pose2D(DistanceUnit.INCH, 53,  -55, AngleUnit.DEGREES, 125),
+                new Pose2D(DistanceUnit.INCH, 53, -30, AngleUnit.DEGREES, 180));
+                //new Pose2D(DistanceUnit.INCH, 10, -14, AngleUnit.DEGREES, -50)).setName("First Drive Segment");
         Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 //new WaitCommand(800),
                 new RepeatCommand(
-                new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
+                new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(RobotCoefficients.WAIT_TIME)), 4)).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
         Command moveToEnd = chassis.driveTrajectory(
-                new Pose2D(DistanceUnit.INCH, 12, -14, AngleUnit.DEGREES, -55),
+                new Pose2D(DistanceUnit.INCH, 10, -14, AngleUnit.DEGREES, -50),
                 new Pose2D(DistanceUnit.INCH,
                         70 - chassis.ROBOT_LENGTH / 2,
-                        -47 + chassis.ROBOT_WIDTH / 2,
-                        AngleUnit.DEGREES, 175)
+                        -24 + chassis.ROBOT_WIDTH / 2,
+                        AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
-        Command firstSegment = new ParallelRaceCommandGroup(firstDriveSegment, prepareLauncher);
+        Command firstSegment = new ParallelRaceCommandGroup(firstDriveSegment);
+//                , prepareLauncher);
         Command secondSegment = new ParallelRaceCommandGroup(launcher.start(), launchBalls);
         Command thirdSegment = new ParallelCommandGroup(launcher.stop(), moveToEnd);
 
-        commandScheduler.schedule(new InstantCommand(()->chassis.setMaxSpeed(.8)), firstSegment, secondSegment, thirdSegment,
-                new InstantCommand(()-> chassis.stop()));
+        commandScheduler.schedule(new InstantCommand(()->chassis.setMaxSpeed(.6)), firstSegment);
+//                , secondSegment, thirdSegment,
+//                new InstantCommand(()-> chassis.stop()));
     }
 
     @Override
     public void start() {
-        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, 72.3 - chassis.ROBOT_LENGTH / 2.0, -47 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 175));
+        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, 53, -55, AngleUnit.DEGREES, 125));
 
     }
 

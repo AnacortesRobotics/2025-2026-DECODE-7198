@@ -35,11 +35,11 @@ public class DecodeAutoBlueFar extends OpMode {
         valueTurnover = ValueTurnover.getInstance();
         commandScheduler.init(this);
 
-        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 21)).setName("Turn To Shoot").setInterruptable(false);
+        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 20)).setName("Turn To Shoot").setInterruptable(false);
         Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start());
         Command launchBalls = new SequentialCommandGroup(
                 new RepeatCommand(
-                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4)).
+                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(RobotCoefficients.WAIT_TIME)), 4)).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
         Command moveToEnd = chassis.driveToPosition(
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)

@@ -39,7 +39,7 @@ public class DecodeAutoRedFar extends OpMode {
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, -25 + chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, -21)).setName("Turn To Position");
         Command prepareLauncher = new SequentialCommandGroup(launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start());
         Command launchBalls = new RepeatCommand(
-                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(1500)), 4).
+                        new SequentialCommandGroup(indexer.fireBall(), new WaitCommand(RobotCoefficients.WAIT_TIME)), 4).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
         Command moveToEnd = chassis.driveToPosition(
                 new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, -48 + chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
