@@ -42,6 +42,10 @@ public class TestingOpMode extends OpMode {
     Indexer indexer;
     CommandScheduler commandScheduler;
 
+    double forward = 0;
+    double strafe = 0;
+    double rotate = 0;
+
 
     @Override
     public void init() {
@@ -60,9 +64,12 @@ public class TestingOpMode extends OpMode {
         commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT1));
         commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT2));
         commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT3));
-        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(launcher.setRPM(5600), launcher.start()));
+        //commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(launcher.setRPM(6000), launcher.start()));
+        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->launcher.setPower(1)));
         commandScheduler.getTrigger(GamepadInput.BACK_BUTTON, GamepadIndex.PRIMARY).onJustPressed(launcher.stop());
 
+        commandScheduler.setDefaultCommands(new InstantCommand(()->
+                chassis.mecanumDrive(forward, strafe, rotate)));
 //
 //        touchSensor = hardwareMap.get(DigitalChannel.class, "touchSens");
 //
@@ -77,6 +84,12 @@ public class TestingOpMode extends OpMode {
 
     @Override
     public void loop() {
+
+        chassis.updateOdo();
+
+        forward = -gamepad1.left_stick_y;
+        strafe = gamepad1.left_stick_x;
+        rotate = -gamepad1.right_stick_x;
 
         commandScheduler.run();
 
@@ -133,4 +146,9 @@ public class TestingOpMode extends OpMode {
 
 
     }
+
+    public void stop() {
+        commandScheduler.endAll();
+    }
+
 }

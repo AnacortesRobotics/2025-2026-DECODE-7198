@@ -120,7 +120,7 @@ public class Launcher implements Subsystem {
         } else if (leftMotor.getCurrent(CurrentUnit.AMPS) <= 9 && rightMotor.getCurrent(CurrentUnit.AMPS) <= 9 && motorWar != -1) {
             motorWar = -1;
         }
-        return System.currentTimeMillis() - motorWar > 1000 && motorWar != -1;
+        return System.currentTimeMillis() - motorWar > 5000 && motorWar != -1;
     }
 
 }

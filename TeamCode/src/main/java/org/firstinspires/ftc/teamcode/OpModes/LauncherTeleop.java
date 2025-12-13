@@ -25,6 +25,7 @@ public class LauncherTeleop extends OpMode {
 
     private RevColorSensorV3 colorSensor;
 
+    private TouchSensor touch;
     private DigitalChannel magnet;
 
 //    private CRServo axon;
@@ -37,8 +38,9 @@ public class LauncherTeleop extends OpMode {
     public void init() {
 
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSens");
+        touch = hardwareMap.get(TouchSensor.class, "touch");
 
-        magnet = hardwareMap.get(DigitalChannelImpl.class, "magnet");
+//        magnet = hardwareMap.get(DigitalChannelImpl.class, "magnet");
 
 //        axon = hardwareMap.get(CRServo.class, "indexerServo");
 //        axonPos = hardwareMap.get(AnalogInput.class, "indexerPOS");
@@ -79,7 +81,8 @@ public class LauncherTeleop extends OpMode {
 //        telemetry.addData("Green", colorSensor.green());
 //        telemetry.addData("Blue", colorSensor.blue());
 
-        telemetry.addData("magnet", magnet.getState());
+//        telemetry.addData("magnet", magnet.getState());
+        telemetry.addData("is touched", touch.getValue());
 
 //        if (lastPose > (axonPos.getVoltage() / axonPos.getMaxVoltage() * 180) + .3) {
 //            axonPose += 180;
