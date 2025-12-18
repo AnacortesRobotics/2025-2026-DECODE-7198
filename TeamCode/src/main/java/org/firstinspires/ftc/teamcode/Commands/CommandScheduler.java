@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.Commands;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 public class CommandScheduler {
     public enum GamepadInput{
@@ -53,6 +53,7 @@ public class CommandScheduler {
 
     private LinkedHashMap<GamepadInput, Trigger> gamepad1Triggers = new LinkedHashMap<>();
     private LinkedHashMap<GamepadInput, Trigger> gamepad2Triggers = new LinkedHashMap<>();
+    private TriggerList triggerList;
 
     private Set<Command> defaultCommands = new LinkedHashSet<>();
     private Set<Command> activeCommands = new LinkedHashSet<>();
@@ -69,6 +70,7 @@ public class CommandScheduler {
         this.gamepad2 = opMode.gamepad2;
         lastGamepad1 = new Gamepad();
         lastGamepad2 = new Gamepad();
+        triggerList = TriggerList.getInstance();
         //runTime.reset();
     }
     public Trigger getTrigger(GamepadInput input, GamepadIndex index){
@@ -85,6 +87,7 @@ public class CommandScheduler {
             return gamepad2Triggers.get(input);
         }
     }
+
     public InputState getGamepadInput(GamepadInput input, GamepadIndex index){
         Gamepad gamepad = index == GamepadIndex.PRIMARY ? gamepad1 : gamepad2;
         Gamepad lastGamepad = index == GamepadIndex.PRIMARY ? lastGamepad1 : lastGamepad2;
@@ -202,6 +205,25 @@ public class CommandScheduler {
         for (Command command : commandsToEnd) {
             endCommand(command, false);
         }
+        triggerList.setRunning(true);
+        for (BooleanSupplier condition : triggerList.getTriggers().keySet()) {
+            Trigger trigger = triggerList.getTriggers().get(condition);
+            InputState inputState = new InputState(condition.getAsBoolean(), triggerList.getLastState(condition));
+            if (inputState.justPressed()) {
+                schedule(trigger.getOnJustPressed());
+            }
+            if (inputState.isPressed()){
+                schedule(trigger.getOnPressed());
+            }
+            if (inputState.justReleased()){
+                schedule(trigger.getOnJustReleased());
+            }
+            if (inputState.isReleased()){
+                schedule(trigger.getOnReleased());
+            }
+        }
+        triggerList.setRunning(false);
+        triggerList.updateList();
         for (GamepadInput input : gamepad1Triggers.keySet()){
             Trigger trigger = gamepad1Triggers.get(input);
             InputState inputState = getGamepadInput(input, GamepadIndex.PRIMARY);
@@ -236,6 +258,7 @@ public class CommandScheduler {
         }
         gamepad1.copy(lastGamepad1);
         gamepad2.copy(lastGamepad2);
+        triggerList.copyTriggerList();
     }
 
 
@@ -276,12 +299,14 @@ public class CommandScheduler {
         gamepad1Triggers.clear();
         gamepad2Triggers.clear();
         defaultCommands.clear();
+        triggerList.stop();
     }
 
     public void updateTelemetry() {
         telemetry.addData("Scheduled commands", getCommandNames(scheduledCommands));
         telemetry.addData("Active commands", getCommandNames(activeCommands));
         telemetry.addData("Active subsystems && commands", getSubsystemCommands(activeSubsystems));
+        telemetry.addData("Trigger list", triggerList.getActiveTriggers());
 //        for (String s : commandRunDebug) {
 //            telemetry.addLine(s);
 //        }

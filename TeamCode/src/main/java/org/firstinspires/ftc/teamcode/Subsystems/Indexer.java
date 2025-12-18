@@ -9,13 +9,16 @@ import org.firstinspires.ftc.teamcode.Commands.*;
 import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
 
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 
 public class Indexer implements Subsystem {
     private Servo rotationServo;
     private Servo pitchServo;
-    private CRServo intakeServo;
+//    private CRServo intakeServo;
+    private DcMotorEx intake;
 //    private DcMotorEx rotationPos;
 //    private DigitalChannel magnetSensor;
     private RevColorSensorV3 colorSensor;
@@ -24,15 +27,17 @@ public class Indexer implements Subsystem {
 
     private Telemetry telemetry;
 
-    private final double SHOOTING_POS = 180;
-    private final double INTAKE_POS = 0;
+    private final double SHOOTING_POS = 0;
+    private final double INTAKE_POS = 180;
 
     private double currentSlot = 0;
 
-    private List<Double> greenSlots;
-    private List<Double> purpleSlots;
+    private List<Double> greenSlots = new ArrayList<>();
+    private List<Double> purpleSlots = new ArrayList<>();
 
     private double targetAngle = 0;
+
+    private BooleanSupplier isIntakeUp;
 
     public Indexer(HardwareMap hMap, Telemetry telemetry) {
         rotationServo = hMap.get(Servo.class, "rotationServo");
@@ -40,15 +45,18 @@ public class Indexer implements Subsystem {
 //        rotationPos = hMap.get(DcMotorEx.class, "rotationPos");
 //        magnetSensor = hMap.get(DigitalChannel.class, "magnetSensor");
         colorSensor = hMap.get(RevColorSensorV3.class, "colorSensor");
-        intakeServo = hMap.get(CRServo.class, "intakeServo");
+//        intakeServo = hMap.get(CRServo.class, "intakeServo");
+        intake = hMap.get(DcMotorEx.class, "intake");
         intakeIn = hMap.get(TouchSensor.class, "touch");
 //        distanceSensor = hMap.get(Rev2mDistanceSensor.class, "distanceSensor");
 //        distanceSensor.initialize();
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.telemetry = telemetry;
+        isIntakeUp = this::intakeState;
     }
 
     public void setIntakePower(double power) {
-        intakeServo.setPower(power);
+        intake.setPower(power);
     }
 
     public void setSpindexerPitch(double angle) {
@@ -58,12 +66,16 @@ public class Indexer implements Subsystem {
     public void setSpindexerTarget(double angle, double slot) {
         double target = angle + slot;
         if (target > 360) {
-            rotationServo.setPosition(target - 360);
+            rotationServo.setPosition((target - 360)/360);
         } else if (target < 0) {
-            rotationServo.setPosition(target + 360);
+            rotationServo.setPosition((target + 360)/360);
         } else {
-            rotationServo.setPosition(target);
+            rotationServo.setPosition(target/360);
         }
+    }
+
+    private boolean intakeState() {
+        return intakeIn.isPressed();
     }
 
 //    public double getAngle() {
@@ -106,7 +118,7 @@ public class Indexer implements Subsystem {
     }
 
     public Command startIntake() {
-        return new InstantCommand(()->setIntakePower(-1));
+        return new InstantCommand(()->setIntakePower(0.4));
     }
 
     public Command stopIntake() {
@@ -117,15 +129,19 @@ public class Indexer implements Subsystem {
         currentSlot = slot;
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerTarget(INTAKE_POS, slot)),
-                new WaitCommand(100),
-                new InstantCommand(()->setSpindexerPitch(.2))
+                new WaitCommand(300),
+                new InstantCommand(()->setSpindexerPitch(.3)),
+                new InstantCommand(()->{
+                    TriggerList triggerList = TriggerList.getInstance();
+                    triggerList.removeTrigger(isIntakeUp);
+        })
         ).setInterruptable(true).setName("Intake Slot");
     }
 
     public Command intakeAndScan() {
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerPitch(.6)),
-                new WaitCommand(150),
+                new WaitCommand(250),
                 new FunctionalCommand(()->{}, ()->{
                     if (getColorResult() != IndexState.NOBALLS) {
                         assignSlot(currentSlot, getColorResult() == IndexState.GREEN);
@@ -139,29 +155,33 @@ public class Indexer implements Subsystem {
         ).setInterruptable(true);
     }
 
-//    public Command intakeMode() {
-//
-//    }
+    public Command intakeMode() {
+        return null;
+    }
 
-    private void intakeOpen() {
+    private Command intakeOpen() {
         if (!greenSlots.contains(RobotCoefficients.SLOT1) || !purpleSlots.contains(RobotCoefficients.SLOT1)) {
-            intakeSlot(RobotCoefficients.SLOT1);
+            return intakeSlot(RobotCoefficients.SLOT1);
         } else if ((!greenSlots.contains(RobotCoefficients.SLOT2) || !purpleSlots.contains(RobotCoefficients.SLOT2))) {
-            intakeSlot(RobotCoefficients.SLOT2);
+            return intakeSlot(RobotCoefficients.SLOT2);
         } else if ((!greenSlots.contains(RobotCoefficients.SLOT3) || !purpleSlots.contains(RobotCoefficients.SLOT3))) {
-            intakeSlot(RobotCoefficients.SLOT3);
+            return intakeSlot(RobotCoefficients.SLOT3);
         } else {
-
+            return null;
         }
     }
 
     public Command fireSlot(double slot) {
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerTarget(SHOOTING_POS, slot)),
-                new WaitCommand(200),
+                new WaitCommand(300),
                 new InstantCommand(()->setSpindexerPitch(.8)),
                 new WaitCommand(200),
-                new InstantCommand(()->setSpindexerPitch(.6))
+                new InstantCommand(()->setSpindexerPitch(.6)),
+                new InstantCommand(()->{
+                    TriggerList triggerList = TriggerList.getInstance();
+                    triggerList.addTrigger(isIntakeUp).onJustPressed(new InstantCommand(()->intakeSlot(RobotCoefficients.SLOT1)));
+                })
         ).setInterruptable(true).setName("Fire slot");
     }
 
@@ -182,6 +202,7 @@ public class Indexer implements Subsystem {
 //        telemetry.addData("Spindexer position", getAngle());
         telemetry.addData("Spindexer Target", targetAngle);
         telemetry.addData("Is intake up", intakeIn.isPressed());
+        telemetry.addData("Spindexer Pos", rotationServo.getPosition());
 //        telemetry.addData("Spindexer error", Math.abs(getAngle() - targetAngle));
     }
 
