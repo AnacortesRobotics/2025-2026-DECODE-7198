@@ -7,9 +7,15 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Commands.*;
 import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
+import org.firstinspires.ftc.teamcode.Prism.Color;
+import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
+import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver.LayerHeight;
+import org.firstinspires.ftc.teamcode.Prism.PrismAnimations.AnimationBase;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -17,43 +23,83 @@ import java.util.function.BooleanSupplier;
 public class Indexer implements Subsystem {
     private Servo rotationServo;
     private Servo pitchServo;
-//    private CRServo intakeServo;
     private DcMotorEx intake;
-//    private DcMotorEx rotationPos;
-//    private DigitalChannel magnetSensor;
     private RevColorSensorV3 colorSensor;
-//    private Rev2mDistanceSensor distanceSensor;
     private TouchSensor intakeIn;
+//    private GoBildaPrismDriver prism;
 
     private Telemetry telemetry;
+    private TriggerList triggerList;
 
     private final double SHOOTING_POS = 0;
     private final double INTAKE_POS = 180;
 
     private double currentSlot = 0;
 
+    private int motifIndex = 0;
     private List<Double> greenSlots = new ArrayList<>();
     private List<Double> purpleSlots = new ArrayList<>();
+    private List<Boolean> motifOrder = new ArrayList<>();
 
     private double targetAngle = 0;
 
-    private BooleanSupplier isIntakeUp;
+    private BooleanSupplier isIntakeUpIntake;
+//    private BooleanSupplier isIntakeUpScan;
+    private BooleanSupplier isCurrentSlotFilled;
 
     public Indexer(HardwareMap hMap, Telemetry telemetry) {
         rotationServo = hMap.get(Servo.class, "rotationServo");
         pitchServo = hMap.get(Servo.class, "pitchServo");
-//        rotationPos = hMap.get(DcMotorEx.class, "rotationPos");
-//        magnetSensor = hMap.get(DigitalChannel.class, "magnetSensor");
         colorSensor = hMap.get(RevColorSensorV3.class, "colorSensor");
-//        intakeServo = hMap.get(CRServo.class, "intakeServo");
         intake = hMap.get(DcMotorEx.class, "intake");
         intakeIn = hMap.get(TouchSensor.class, "touch");
-//        distanceSensor = hMap.get(Rev2mDistanceSensor.class, "distanceSensor");
-//        distanceSensor.initialize();
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        prism = hMap.get(GoBildaPrismDriver.class, "prism");
+//        prism.setTargetFPS(60);
+//        prism.setStripLength(12);
         this.telemetry = telemetry;
-        isIntakeUp = this::intakeState;
+        triggerList = TriggerList.getInstance();
+        isIntakeUpIntake = this::isIntakeUp;
+//        isIntakeUpScan = this::isIntakeUp;
+        isCurrentSlotFilled = this::isSlotFull;
+        setMotifOrder(true, false, false);
     }
+
+    private boolean isIntakeUp() {
+        return intakeIn.isPressed();
+    }
+
+    private boolean isSlotFull() {
+        return purpleSlots.contains(currentSlot) || greenSlots.contains(currentSlot);
+    }
+
+    public void setMotifOrder(Boolean... order) {
+        motifOrder = Arrays.asList(order);
+    }
+
+    public List<Boolean> getMotifOrder() {
+        return motifOrder;
+    }
+
+    public void incrementIndex() {
+        motifIndex = motifIndex + 1 > 3 ? 0 : motifIndex + 1;
+    }
+
+    public void emptySlot(double slot) {
+        greenSlots.remove(slot);
+        purpleSlots.remove(slot);
+//        animateArtifacts(slot, Color.TRANSPARENT);
+    }
+
+//    public void animatePrism(LayerHeight height, AnimationBase animation) {
+//        prism.insertAndUpdateAnimation(height, animation);
+//    }
+//
+//    public void animateArtifacts(double slot, Color color) {
+//        int index = (int)slot / 120;
+//        prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(color, 100, index, index + 1));
+//        prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(color, 100, index + 6, index + 7));
+//    }
 
     public void setIntakePower(double power) {
         intake.setPower(power);
@@ -63,8 +109,18 @@ public class Indexer implements Subsystem {
         pitchServo.setPosition(angle);
     }
 
+    public void setSpindexerTargetInit(double angle) {
+        rotationServo.setPosition(angle/360);
+    }
+
+    public Command fixIntake() {
+        return new InstantCommand(()->setSpindexerTargetInit(rotationServo.getPosition() + 30));
+    }
+
+
     public void setSpindexerTarget(double angle, double slot) {
         double target = angle + slot;
+        currentSlot = slot;
         if (target > 360) {
             rotationServo.setPosition((target - 360)/360);
         } else if (target < 0) {
@@ -74,33 +130,6 @@ public class Indexer implements Subsystem {
         }
     }
 
-    private boolean intakeState() {
-        return intakeIn.isPressed();
-    }
-
-//    public double getAngle() {
-//        return Math.abs(((double)rotationPos.getCurrentPosition() / 22.75555) % 360);
-//    }
-
-//    public void updateAngle() {
-//        rotationServo.setPower(isAtTarget() ? 0 : -(getAngle() - targetAngle) > 0 ? .1 : -.1);
-//    }
-
-//    public boolean isAtTarget() {
-//        double angleDifference = Math.abs(getAngle() - targetAngle);
-//        return angleDifference < 4 || angleDifference > 356;
-//    }
-
-//    public double getTargetAngle(double offset) {
-//        double angle = targetAngle + offset;
-//        if (angle > 360) {
-//            angle -= 360;
-//        } else if (angle < 0) {
-//            angle +=360;
-//        }
-//        return angle;
-//    }
-
     private enum IndexState {
         NOBALLS,
         GREEN,
@@ -108,9 +137,9 @@ public class Indexer implements Subsystem {
     }
 
     private IndexState getColorResult() {
-        if (colorSensor.red() < 100 && colorSensor.green() < 100 && colorSensor.blue() < 100) {
+        if (colorSensor.green() < 65 && colorSensor.blue() < 65) {
             return IndexState.NOBALLS;
-        } else if ((colorSensor.red() + colorSensor.blue()) / 2 > colorSensor.green()) {
+        } else if (colorSensor.blue() > colorSensor.green()) {
             return IndexState.PURPLE;
         } else {
             return IndexState.GREEN;
@@ -118,7 +147,7 @@ public class Indexer implements Subsystem {
     }
 
     public Command startIntake() {
-        return new InstantCommand(()->setIntakePower(0.4));
+        return new InstantCommand(()->setIntakePower(.7));
     }
 
     public Command stopIntake() {
@@ -126,22 +155,20 @@ public class Indexer implements Subsystem {
     }
 
     public Command intakeSlot(double slot) {
-        currentSlot = slot;
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerTarget(INTAKE_POS, slot)),
-                new WaitCommand(300),
-                new InstantCommand(()->setSpindexerPitch(.3)),
-                new InstantCommand(()->{
-                    TriggerList triggerList = TriggerList.getInstance();
-                    triggerList.removeTrigger(isIntakeUp);
-        })
+                new WaitCommand(1000),
+                startIntake(),
+                new InstantCommand(()->setSpindexerPitch(.3))
         ).setInterruptable(true).setName("Intake Slot");
     }
 
     public Command intakeAndScan() {
+        triggerList.removeTrigger(isIntakeUpIntake);
         return new SequentialCommandGroup(
-                new InstantCommand(()->setSpindexerPitch(.6)),
-                new WaitCommand(250),
+                new InstantCommand(()->setSpindexerPitch(.58)),
+                new WaitCommand(1000),
+                stopIntake(),
                 new FunctionalCommand(()->{}, ()->{
                     if (getColorResult() != IndexState.NOBALLS) {
                         assignSlot(currentSlot, getColorResult() == IndexState.GREEN);
@@ -151,15 +178,20 @@ public class Indexer implements Subsystem {
                     (interrupted)->{},
                     ()->purpleSlots.contains(currentSlot) || greenSlots.contains(currentSlot),
                     this
-                )
-        ).setInterruptable(true);
+                ),
+                new InstantCommand(()->setSpindexerPitch(.55))
+        ).setInterruptable(true).setName("Intake and scan");
     }
 
     public Command intakeMode() {
-        return null;
+        return new InstantCommand(()-> {
+//            triggerList.removeTrigger(isIntakeUpScan);
+            triggerList.addTrigger(isIntakeUpIntake).onPressed(intakeAndScan());
+            triggerList.addTrigger(isCurrentSlotFilled).onJustPressed(intakeOpen());
+        });
     }
 
-    private Command intakeOpen() {
+    public Command intakeOpen() {
         if (!greenSlots.contains(RobotCoefficients.SLOT1) || !purpleSlots.contains(RobotCoefficients.SLOT1)) {
             return intakeSlot(RobotCoefficients.SLOT1);
         } else if ((!greenSlots.contains(RobotCoefficients.SLOT2) || !purpleSlots.contains(RobotCoefficients.SLOT2))) {
@@ -167,29 +199,58 @@ public class Indexer implements Subsystem {
         } else if ((!greenSlots.contains(RobotCoefficients.SLOT3) || !purpleSlots.contains(RobotCoefficients.SLOT3))) {
             return intakeSlot(RobotCoefficients.SLOT3);
         } else {
-            return null;
+            return shootingMode();
+        }
+    }
+
+    public Command shootingMode() {
+        return new InstantCommand(()->{
+            triggerList.removeTrigger(isIntakeUpIntake);
+            triggerList.removeTrigger(isCurrentSlotFilled);
+//            triggerList.removeTrigger(isIntakeUpScan);
+        });
+    }
+
+    public Command fireInOrder() {
+        if (purpleSlots.isEmpty() && greenSlots.isEmpty()) {
+            return intakeMode();
+        } else if (motifOrder.get(motifIndex) == true && !greenSlots.isEmpty()) {
+            return fireSlot(greenSlots.get(0));
+        } else if (motifOrder.get(motifIndex) == false && !purpleSlots.isEmpty()) {
+            return fireSlot(purpleSlots.get(0));
+        } else {
+            return fireSlot(greenSlots.isEmpty() ? purpleSlots.get(0) : greenSlots.get(0));
         }
     }
 
     public Command fireSlot(double slot) {
+        double lastCurrentSlot = currentSlot;
         return new SequentialCommandGroup(
+                new InstantCommand(()->setSpindexerPitch(.55)),
                 new InstantCommand(()->setSpindexerTarget(SHOOTING_POS, slot)),
-                new WaitCommand(300),
-                new InstantCommand(()->setSpindexerPitch(.8)),
-                new WaitCommand(200),
-                new InstantCommand(()->setSpindexerPitch(.6)),
-                new InstantCommand(()->{
-                    TriggerList triggerList = TriggerList.getInstance();
-                    triggerList.addTrigger(isIntakeUp).onJustPressed(new InstantCommand(()->intakeSlot(RobotCoefficients.SLOT1)));
-                })
+                new WaitCommand(()->{
+                    if (lastCurrentSlot == slot) {
+                        return 0;
+                    } else if (Math.abs(lastCurrentSlot - slot) == 120) {
+                        return 300;
+                    } else {
+                        return 500;
+                    }
+                }),
+                new InstantCommand(()->{setSpindexerPitch(.8); incrementIndex(); emptySlot(slot);}),
+                new WaitCommand(100),
+                new InstantCommand(()->setSpindexerPitch(.55))
+
         ).setInterruptable(true).setName("Fire slot");
     }
 
     private void assignSlot(double slot, boolean isGreen) {
         if (isGreen) {
             greenSlots.add(slot);
+//            animateArtifacts(slot, Color.GREEN);
         } else {
             purpleSlots.add(slot);
+//            animateArtifacts(slot, Color.PURPLE);
         }
     }
 
@@ -197,13 +258,11 @@ public class Indexer implements Subsystem {
         telemetry.addData("red", colorSensor.red());
         telemetry.addData("green", colorSensor.green());
         telemetry.addData("blue", colorSensor.blue());
-//        telemetry.addData("distance", distanceSensor.getDistance(DistanceUnit.INCH));
-//        telemetry.addData("is magnet active", !magnetSensor.getState());
-//        telemetry.addData("Spindexer position", getAngle());
         telemetry.addData("Spindexer Target", targetAngle);
         telemetry.addData("Is intake up", intakeIn.isPressed());
         telemetry.addData("Spindexer Pos", rotationServo.getPosition());
-//        telemetry.addData("Spindexer error", Math.abs(getAngle() - targetAngle));
+        telemetry.addData("Green list", greenSlots.toString());
+        telemetry.addData("Purple list", purpleSlots.toString());
     }
 
 }

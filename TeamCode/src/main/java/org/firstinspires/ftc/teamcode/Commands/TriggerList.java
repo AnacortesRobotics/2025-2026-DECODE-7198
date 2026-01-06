@@ -11,7 +11,7 @@ public class TriggerList {
     public static TriggerList instance;
 
     private LinkedHashMap<BooleanSupplier, Trigger> commandTriggers = new LinkedHashMap<>();
-    private LinkedHashMap<BooleanSupplier, Trigger> lastCommandTriggers = new LinkedHashMap<>();
+    private LinkedHashMap<BooleanSupplier, Boolean> lastCommandTriggers = new LinkedHashMap<>();
     private LinkedHashMap<BooleanSupplier, Trigger> commandsToAdd = new LinkedHashMap<>();
     private LinkedHashMap<BooleanSupplier, Trigger> commandsToRemove = new LinkedHashMap<>();
 
@@ -28,14 +28,14 @@ public class TriggerList {
         return commandTriggers;
     }
 
-    public LinkedHashMap<BooleanSupplier, Trigger> getLastTriggers() {
+    public LinkedHashMap<BooleanSupplier, Boolean> getLastTriggers() {
         return lastCommandTriggers;
     }
 
     public boolean getLastState(BooleanSupplier key) {
         for (BooleanSupplier condition : lastCommandTriggers.keySet()) {
             if (condition == key) {
-                return condition.getAsBoolean();
+                return lastCommandTriggers.get(condition);
             }
         }
         return false;
@@ -78,14 +78,17 @@ public class TriggerList {
     }
 
     public void copyTriggerList() {
-        lastCommandTriggers = commandTriggers;
+        lastCommandTriggers.clear();
+        for (BooleanSupplier condition : commandTriggers.keySet()) {
+            lastCommandTriggers.put(condition, condition.getAsBoolean());
+        }
     }
 
     public void setRunning(boolean running) {
         this.running = running;
     }
 
-    public String getActiveTriggers() {
+    public String getTriggerNames() {
         StringBuilder listOfNames = new StringBuilder();
         for (Map.Entry<BooleanSupplier, Trigger> triggerSet : commandTriggers.entrySet()) {
             listOfNames.append(triggerSet.getKey().toString());

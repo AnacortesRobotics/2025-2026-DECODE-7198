@@ -141,7 +141,7 @@ public class CommandScheduler {
 
     }
     public void setDefaultCommands(Command... commands ){
-        for (Command command:commands) {
+        for (Command command : commands) {
             defaultCommands.add(command.setInterruptable(true));
         }
     }
@@ -212,13 +212,13 @@ public class CommandScheduler {
             if (inputState.justPressed()) {
                 schedule(trigger.getOnJustPressed());
             }
-            if (inputState.isPressed()){
+            if (inputState.isPressed()) {
                 schedule(trigger.getOnPressed());
             }
-            if (inputState.justReleased()){
+            if (inputState.justReleased()) {
                 schedule(trigger.getOnJustReleased());
             }
-            if (inputState.isReleased()){
+            if (inputState.isReleased()) {
                 schedule(trigger.getOnReleased());
             }
         }
@@ -306,7 +306,7 @@ public class CommandScheduler {
         telemetry.addData("Scheduled commands", getCommandNames(scheduledCommands));
         telemetry.addData("Active commands", getCommandNames(activeCommands));
         telemetry.addData("Active subsystems && commands", getSubsystemCommands(activeSubsystems));
-        telemetry.addData("Trigger list", triggerList.getActiveTriggers());
+        telemetry.addData("Trigger list", triggerList.getTriggerNames());
 //        for (String s : commandRunDebug) {
 //            telemetry.addLine(s);
 //        }

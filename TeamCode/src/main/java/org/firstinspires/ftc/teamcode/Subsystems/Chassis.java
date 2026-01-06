@@ -14,9 +14,6 @@ import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -193,7 +190,7 @@ public class Chassis implements Subsystem {
                 this).setName("Drive trajectory");
     }
 
-    private double getAnglefromPoint(Pose2D target) {
+    private double getAngleFromPoint(Pose2D target) {
         double xDif = target.getX(DistanceUnit.INCH) - odo.getPosX(DistanceUnit.INCH);
         double yDif = target.getY(DistanceUnit.INCH) - odo.getPosY(DistanceUnit.INCH);
         double targetAngle = Math.atan2(yDif, xDif) * 180 / Math.PI;
@@ -208,7 +205,7 @@ public class Chassis implements Subsystem {
     public Command autoTurn(DoubleSupplier forward, DoubleSupplier strafe, Pose2D target) {
         return new FunctionalCommand(()->{},
         ()->{
-            double targetAngle = getAnglefromPoint(target);
+            double targetAngle = getAngleFromPoint(target);
             if (targetAngle - odo.getHeading(AngleUnit.DEGREES) > 180) {
                 targetAngle -= 360;
             } else if (targetAngle - odo.getHeading(AngleUnit.DEGREES) < -180) {
