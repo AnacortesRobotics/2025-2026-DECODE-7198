@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Color;
 //import android.hardware.Sensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,6 +13,14 @@ import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
+import org.firstinspires.ftc.teamcode.Commands.SequentialCommandGroup;
+import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
+import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
+import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 
 //@Disabled
 @TeleOp
@@ -19,7 +28,7 @@ public class TestingOpMode extends OpMode {
 
     AnalogInput encoder;
 
-//    private DistanceSensor distance;
+    private DistanceSensor distance;
 //    private DigitalChannel touchSensor;
 //    private CommandScheduler commandScheduler;
 //    static final double MAX_POS = 1.0;
@@ -27,22 +36,56 @@ public class TestingOpMode extends OpMode {
 //    double  position = (MAX_POS - MIN_POS) / 2;
 //    Servo tServo;
 //    CRServo sServo;
-//    NormalizedColorSensor colorSensor;
+    RevColorSensorV3 colorSensor;
+    Chassis chassis;
+    Launcher launcher;
+    Indexer indexer;
+    CommandScheduler commandScheduler;
+
+    double forward = 0;
+    double strafe = 0;
+    double rotate = 0;
 
 
     @Override
     public void init() {
+        commandScheduler = CommandScheduler.getInstance();
+        chassis = new Chassis(hardwareMap, telemetry, true);
+        launcher = new Launcher(hardwareMap, telemetry);
+        indexer = new Indexer(hardwareMap, telemetry);
+        commandScheduler.init(this);
 
-        encoder = hardwareMap.get(AnalogInput.class, "indexerPOS");
-//        commandScheduler = CommandScheduler.getInstance();
-//        commandScheduler.init(this);
+        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
+                indexer.intakeMode(), indexer.intakeOpen()
+        ));
+        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
+                indexer.shootingMode(), indexer.fireInOrder()
+        ));
+        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT1));
+        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT2));
+        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT3));
+        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(1)));
+        commandScheduler.getTrigger(GamepadInput.BACK_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop());
+//        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
+//                indexer.intakeMode(), indexer.fixIntake()
+//        ));
+        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.startIntake());
+        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.stopIntake());
+        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT1));
+        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT2));
+        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT3));
+        commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeAndScan());
+
+//        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(launcher.setRPM(1000), launcher.start()));
+
+        commandScheduler.setDefaultCommands(new InstantCommand(()->
+                chassis.mecanumDrive(forward, strafe, rotate)));
 //
 //        touchSensor = hardwareMap.get(DigitalChannel.class, "touchSens");
 //
 //        touchSensor.setMode(DigitalChannel.Mode.INPUT);
 //
 //
-//        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "colorSens");
 //        distance = hardwareMap.get(DistanceSensor.class, "distanceSens");
 //        tServo = hardwareMap.get(Servo.class, "testServo");
 //        sServo = hardwareMap.get(CRServo.class, "crServo");
@@ -52,7 +95,19 @@ public class TestingOpMode extends OpMode {
     @Override
     public void loop() {
 
-        telemetry.addData("pos", encoder.getVoltage() * (360 / encoder.getMaxVoltage()));
+        chassis.updateOdo();
+
+        forward = gamepad1.left_stick_y;
+        strafe = -gamepad1.left_stick_x;
+        rotate = -gamepad1.right_stick_x;
+
+        commandScheduler.run();
+
+        launcher.updateTelemetry();
+        indexer.updateTelemetry();
+        commandScheduler.updateTelemetry();
+
+//        telemetry.addData("pos", encoder.getVoltage() * (360 / encoder.getMaxVoltage()));
 
 //
 //        if (!touchSensor.getState()) {
@@ -84,9 +139,10 @@ public class TestingOpMode extends OpMode {
 //        }
 //
 //        telemetry.addLine()
-//                .addData("Red", "%.3f", colors.red)
-//                .addData("Green", "%.3f", colors.green)
-//                .addData("Blue", "%.3f", colors.blue);
+//                .addData("Red", colorSensor.red())
+//                .addData("Green", colorSensor.green())
+//                .addData("Blue", colorSensor.blue());
+//
 //        telemetry.addLine()
 //                .addData("Hue", "%.3f", hsvValues[0])
 //                .addData("Saturation", "%.3f", hsvValues[1])
@@ -100,4 +156,9 @@ public class TestingOpMode extends OpMode {
 
 
     }
+
+    public void stop() {
+        commandScheduler.endAll();
+    }
+
 }

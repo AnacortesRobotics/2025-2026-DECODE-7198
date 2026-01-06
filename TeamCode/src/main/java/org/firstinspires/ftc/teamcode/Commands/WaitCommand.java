@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Commands;
 
+import java.util.function.LongSupplier;
+
 public class WaitCommand extends Command {
 
     private long msDuration = 0;
@@ -7,6 +9,10 @@ public class WaitCommand extends Command {
 
     public WaitCommand(long duration) {
         this.msDuration = duration;
+    }
+
+    public WaitCommand(LongSupplier duration) {
+        this.msDuration = duration.getAsLong();
     }
 
     @Override

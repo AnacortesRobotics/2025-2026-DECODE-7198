@@ -77,7 +77,7 @@ public class DecodeTeleOp extends OpMode {
                         launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start()
         ).setInterruptable(true));
         commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop().setName("Stop launcher"));
-        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireBall());
+        //commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireBall());
 
         commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(
                 new InstantCommand(()->commandScheduler.setDefaultCommands(new InstantCommand(
