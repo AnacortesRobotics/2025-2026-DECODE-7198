@@ -33,11 +33,11 @@ public class Launcher implements Subsystem {
         pid = new PIDController(PIDCoefficients.LP, PIDCoefficients.LI, PIDCoefficients.LD, false);
 //        pidL = new PIDController(PIDCoefficients.LLP,PIDCoefficients.LLI,PIDCoefficients.LLD, false);
 //        pidR = new PIDController(PIDCoefficients.LRP,PIDCoefficients.LRI,PIDCoefficients.LRD, false);
-        feedforward = new FeedforwardController(PIDCoefficients.LKS, PIDCoefficients.LKV);
+//        feedforward = new FeedforwardController(PIDCoefficients.LKS, PIDCoefficients.LKV);
         leftMotor = hMap.get(DcMotorEx.class, "launcherLeft");
-        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         rightMotor = hMap.get(DcMotorEx.class, "launcherRight");
-        rightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.telemetry = telemetry;
     }
     public void setPower(double power){
@@ -57,12 +57,12 @@ public class Launcher implements Subsystem {
     }
     private void update(){
         double leftrpm = getCurrentRPM(LauncherWheel.LEFT);
-        //leftMotor.setPower(pidL.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
-        double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
-        //rightMotor.setPower(pidR.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
+//        leftMotor.setPower(pid.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
+//        double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
+//        rightMotor.setPower(pid.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
 
-        leftMotor.setPower(pid.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
-        rightMotor.setPower(pid.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
+        leftMotor.setPower(pid.update(leftrpm));// + feedforward.calculateWithVelocities(targetRPM));
+        rightMotor.setPower(pid.update(leftrpm));// + feedforward.calculateWithVelocities(targetRPM));
         isSpinningFlag = true;
     }
     public enum LauncherWheel {
@@ -89,13 +89,13 @@ public class Launcher implements Subsystem {
         setPower(0);
     }
     public Command start(){
-        return new InstantCommand(()-> setPower(1))
-//        return new FunctionalCommand(
-//                ()->setTargetRPM(targetRPM),
-//                this::update,
-//                (interrupted)->{},
-//                ()->false,
-                /*this)*/.setInterruptable(true);
+//        return new InstantCommand(()-> setPower(1));
+        return new FunctionalCommand(
+                ()->setTargetRPM(targetRPM),
+                this::update,
+                (interrupted)->{},
+                ()->false,
+                this).setInterruptable(true);
     }
     public Command setRPM(double rpm){
         return new InstantCommand(()->setTargetRPM(rpm));
@@ -113,6 +113,8 @@ public class Launcher implements Subsystem {
         telemetry.addData("Right wheel rpm", getCurrentRPM(LauncherWheel.RIGHT));
         telemetry.addData("Left wheel current", leftMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Right wheel current", rightMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("targetRPM:", targetRPM);
+        telemetry.addData("PID:", pid.getTarget());
     }
 
     public boolean areMotorsFighting() {

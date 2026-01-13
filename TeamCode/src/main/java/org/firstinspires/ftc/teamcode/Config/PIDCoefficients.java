@@ -21,9 +21,9 @@ public class PIDCoefficients {
 //    public static double LRP = .001;
 //    public static double LRI = 0;
 //    public static double LRD = .001;
-    public static double LP = .001;
+    public static double LP = .05;
     public static double LI = 0;
-    public static double LD = .001;
+    public static double LD = .0;
     public static double LKS = 0;
     public static double LKV = .000175;
 
