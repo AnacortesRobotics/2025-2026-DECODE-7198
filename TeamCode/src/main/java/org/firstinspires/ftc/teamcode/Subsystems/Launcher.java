@@ -89,12 +89,13 @@ public class Launcher implements Subsystem {
         setPower(0);
     }
     public Command start(){
-        return new FunctionalCommand(
-                ()->setTargetRPM(targetRPM),
-                this::update,
-                (interrupted)->{},
-                ()->false,
-                this).setInterruptable(true);
+        return new InstantCommand(()-> setPower(1))
+//        return new FunctionalCommand(
+//                ()->setTargetRPM(targetRPM),
+//                this::update,
+//                (interrupted)->{},
+//                ()->false,
+                /*this)*/.setInterruptable(true);
     }
     public Command setRPM(double rpm){
         return new InstantCommand(()->setTargetRPM(rpm));

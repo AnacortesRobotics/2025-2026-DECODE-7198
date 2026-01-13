@@ -54,6 +54,7 @@ public class Indexer implements Subsystem {
         colorSensor = hMap.get(RevColorSensorV3.class, "colorSensor");
         intake = hMap.get(DcMotorEx.class, "intake");
         intakeIn = hMap.get(TouchSensor.class, "touch");
+        intake.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 //        prism = hMap.get(GoBildaPrismDriver.class, "prism");
 //        prism.setTargetFPS(60);
@@ -151,6 +152,10 @@ public class Indexer implements Subsystem {
         return new InstantCommand(()->setIntakePower(.7));
     }
 
+    public Command reverseIntake() {
+        return new InstantCommand(()->setIntakePower(-.7));
+    }
+
     public Command stopIntake() {
         return new InstantCommand(()->setIntakePower(0));
     }
@@ -168,7 +173,7 @@ public class Indexer implements Subsystem {
         triggerList.removeTrigger(isIntakeUpIntake);
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerPitch(.58)),
-                new WaitCommand(1000),
+                new WaitCommand(750),
                 stopIntake(),
                 new FunctionalCommand(()->{}, ()->{
                     if (getColorResult() != IndexState.NOBALLS) {
@@ -237,12 +242,17 @@ public class Indexer implements Subsystem {
                     } else {
                         return 500;
                     }
-                }),
-                new InstantCommand(()->{setSpindexerPitch(.8); incrementIndex(); emptySlot(slot);}),
-                new WaitCommand(100),
-                new InstantCommand(()->setSpindexerPitch(.55))
+                })
 
         ).setInterruptable(true).setName("Fire slot");
+    }
+
+    public Command pitchToLauncher() {
+        return new SequentialCommandGroup(
+                new InstantCommand(()->{setSpindexerPitch(.65);}),
+                new WaitCommand(100),
+                new InstantCommand(()->setSpindexerPitch(.55))
+        );
     }
 
     private void assignSlot(double slot, boolean isGreen) {

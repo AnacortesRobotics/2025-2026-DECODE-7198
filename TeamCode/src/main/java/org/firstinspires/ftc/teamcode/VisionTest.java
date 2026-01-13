@@ -107,8 +107,8 @@ public class VisionTest extends LinearOpMode {
          * Starts polling for data.  If you neglect to call start(), getLatestResult() will return null.
          */
 
-        telemetry.addData(">", "Robot Ready.  Press Play.");
-        telemetry.update();
+//        telemetry.addData(">", "Robot Ready.  Press Play.");
+//        telemetry.update();
 
         leftdrive = hardwareMap.get(DcMotor.class, "leftdrive");
         leftdrive.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -148,8 +148,8 @@ public class VisionTest extends LinearOpMode {
 //                telemetry.addData("trackingResult", trackingResult);
 //                if (trackingResult != null) {
 //                    double trackingResultArea = trackingResult.getTargetArea();
-////                double purpleArea = purpleColorResult.getTargetArea();
-////                turn = 0;
+//                double purpleArea = purpleColorResult.getTargetArea();
+//                turn = 0;
 //
 //                    telemetry.addData("colorresult area", trackingResultArea);
 //
@@ -159,7 +159,7 @@ public class VisionTest extends LinearOpMode {
 //                            turn = .025 * (trackingResult.getTargetXDegrees()/*/Math.sqrt(area)*/);
 //                            drive(gamepad1.left_stick_y, turn);
 //                        }
-////                    telemetry.addData("distance value", colorresult.);
+//                    telemetry.addData("distance value", colorresult.);
 //                    }
 //                    else {
 //                        drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
@@ -170,7 +170,7 @@ public class VisionTest extends LinearOpMode {
 //
 //                }
 
-            }
+//            }
 //            else {
 //                telemetry.addData("distance value", colorresult.getTargetArea());
                 drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
@@ -178,5 +178,5 @@ public class VisionTest extends LinearOpMode {
 
             telemetry.update();
         }
-//    }
+    }
 }

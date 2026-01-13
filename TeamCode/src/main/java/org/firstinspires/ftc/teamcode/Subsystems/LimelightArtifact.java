@@ -35,6 +35,7 @@ public class LimelightArtifact implements Subsystem {
     }
 
     private LLResultTypes.FiducialResult getAprilTag(boolean isRed) {
+        limelightResult = limelight.getLatestResult();
         List<LLResultTypes.FiducialResult> result = limelightResult.getFiducialResults();
         if(result == null) return null;
         for (LLResultTypes.FiducialResult tag : result ) {
@@ -62,19 +63,15 @@ public class LimelightArtifact implements Subsystem {
         limelightResult = limelight.getLatestResult();
     }
 
-//    public Command shootingMode() {
-//        if(isShootingMode) {
+//    public Command shootingModeOn() {
 //            return new InstantCommand(
 //                    () -> pitchServo.setPosition(.5)
 //            );
 //        }
-//        if(!isShootingMode) {
-//            return new InstantCommand(
+//    public Command shootingModeOff() {
+//        return new InstantCommand(
 //                    () -> pitchServo.setPosition(0)
-//            );
-//
-//        }
-//        else return null;
+//        );
 //    }
 
 //    public void updateShootingMode(boolean shootingMode) {
@@ -84,18 +81,18 @@ public class LimelightArtifact implements Subsystem {
 
     public void printTelemetry() {
         LLStatus status = limelight.getStatus();
-        telemetry.addData("Name", "%s",
-                status.getName());
-        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
-                status.getTemp(), status.getCpu(), (int) status.getFps());
-        telemetry.addData("Pipeline", "Index: %d, Type: %s",
-                status.getPipelineIndex(), status.getPipelineType());
+//        telemetry.addData("Name", "%s",
+//                status.getName());
+//        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
+//                status.getTemp(), status.getCpu(), (int) status.getFps());
+//        telemetry.addData("Pipeline", "Index: %d, Type: %s",
+//                status.getPipelineIndex(), status.getPipelineType());
     }
 
     public LLResultTypes.FiducialResult getAprilTag(){
         LLResult result = limelight.getLatestResult();
         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-        if (fiducialResults.size() > 0){
+        if (!fiducialResults.isEmpty()){
             return fiducialResults.get(0);
         } else {
             return null;
@@ -113,13 +110,8 @@ public class LimelightArtifact implements Subsystem {
         return null;
     }
 
-    public void trackGreen () {
-        limelightInfo.changePipeline(1);
-
-    }
-    public void trackPurple () {
-        limelightInfo.changePipeline(2);
-    }
+    public void trackGreen () { limelightInfo.changePipeline(1); }
+    public void trackPurple () {limelightInfo.changePipeline(2);}
     public void trackAprilTag () {
         limelightInfo.changePipeline(0);
     }

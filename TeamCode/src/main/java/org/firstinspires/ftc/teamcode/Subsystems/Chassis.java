@@ -25,10 +25,10 @@ public class Chassis implements Subsystem {
     public final double ROBOT_WIDTH = 15.625;
     public final double ROBOT_LENGTH = 15.25;
 
-    private DcMotor leftFront;
-    private DcMotor rightFront;
-    private DcMotor leftBack;
-    private DcMotor rightBack;
+    public DcMotor leftFront;
+    public DcMotor rightFront;
+    public DcMotor leftBack;
+    public DcMotor rightBack;
 
     private double scaleSpeed = 1;
     private double maxSpeed = 1;

@@ -10,15 +10,15 @@ import com.qualcomm.robotcore.hardware.*;
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorColor;
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.SequentialCommandGroup;
 import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
-import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
-import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
-import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Subsystems.*;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 
@@ -40,6 +40,8 @@ public class TestingOpMode extends OpMode {
     Chassis chassis;
     Launcher launcher;
     Indexer indexer;
+    Limelight limelight;
+    LimelightArtifact limelightArtifact;
     CommandScheduler commandScheduler;
 
     double forward = 0;
@@ -53,28 +55,44 @@ public class TestingOpMode extends OpMode {
         chassis = new Chassis(hardwareMap, telemetry, true);
         launcher = new Launcher(hardwareMap, telemetry);
         indexer = new Indexer(hardwareMap, telemetry);
+        limelightArtifact = new LimelightArtifact(hardwareMap, telemetry, 0);
         commandScheduler.init(this);
 
+        launcher.stop();
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                indexer.intakeMode(), indexer.intakeOpen()
-        ));
+                indexer.intakeMode(), indexer.intakeOpen()));
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                indexer.shootingMode(), indexer.fireInOrder()
-        ));
+                indexer.shootingMode(), indexer.fireInOrder()));
+        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
+                indexer.shootingMode(), chassis.autoTurn(()->0.0, ()->0.0, limelightArtifact.getAngleOffSet(true))));
+        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
+                indexer.shootingMode(), chassis.autoTurn(()->0.0, ()->0.0, limelightArtifact.getAngleOffSet(false))));
         commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT1));
         commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT2));
-        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT3));
-        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(1)));
+        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT3));
+        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.pitchToLauncher());
+        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(1)));
+        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(.9)));
+        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(.9)));
+        commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(.8)));
+
         commandScheduler.getTrigger(GamepadInput.BACK_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop());
 //        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
 //                indexer.intakeMode(), indexer.fixIntake()
 //        ));
-        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.startIntake());
-        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.stopIntake());
+//        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.startIntake());
+//        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.reverseIntake());
+//        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.stopIntake());
         commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT1));
         commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT2));
         commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT3));
         commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeAndScan());
+        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onPressed(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 12, 12, AngleUnit.DEGREES, 0)));
+        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.stop()));
+//        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.leftFront.setPower(1.0))).onJustReleased(new InstantCommand(()->chassis.leftFront.setPower(0.0)));
+//        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.rightFront.setPower(1.0))).onJustReleased(new InstantCommand(()->chassis.rightFront.setPower(0.0)));
+//        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.rightBack.setPower(1.0))).onJustReleased(new InstantCommand(()->chassis.rightBack.setPower(0.0)));
+//        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->chassis.leftBack.setPower(1.0))).onJustReleased(new InstantCommand(()->chassis.leftBack.setPower(0.0)));
 
 //        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(launcher.setRPM(1000), launcher.start()));
 
@@ -97,8 +115,8 @@ public class TestingOpMode extends OpMode {
 
         chassis.updateOdo();
 
-        forward = gamepad1.left_stick_y;
-        strafe = -gamepad1.left_stick_x;
+        forward = -gamepad1.left_stick_y;
+        strafe = gamepad1.left_stick_x;
         rotate = -gamepad1.right_stick_x;
 
         commandScheduler.run();
