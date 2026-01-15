@@ -37,11 +37,11 @@ public class DecodeAutoBlueFarV2 extends OpMode {
         commandScheduler.init(this);
 
         Command wait = new WaitCommand(500);
-        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + chassis.ROBOT_LENGTH / 2.0, 25 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 16)).setName("Turn To Shoot").setInterruptable(false);
-        Command moveToCollect1stcycle = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + chassis.ROBOT_LENGTH / 2.0, 36 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
-        Command moveToCollect1stcycle1stBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + chassis.ROBOT_LENGTH / 2.0, 42 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
-        Command moveToCollect1stcycle2ndBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + chassis.ROBOT_LENGTH / 2.0, 47 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 90)).setName("Move To 2nd Collect").setInterruptable(false);
-        Command moveToCollect1stcycle3rdBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + chassis.ROBOT_LENGTH / 2.0, 52 - chassis.ROBOT_WIDTH / 2.0, AngleUnit.DEGREES, 90)).setName("Move To 3rd Collect").setInterruptable(false);
+        Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + RobotCoefficients.ROBOT_LENGTH_HALF, 25 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 15.75)).setName("Turn To Shoot").setInterruptable(false);
+        Command moveToCollect1stcycle = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + RobotCoefficients.ROBOT_LENGTH_HALF, 36 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
+        Command moveToCollect1stcycle1stBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + RobotCoefficients.ROBOT_LENGTH_HALF, 42 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
+        Command moveToCollect1stcycle2ndBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 47 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 2nd Collect").setInterruptable(false);
+        Command moveToCollect1stcycle3rdBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 52 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 3rd Collect").setInterruptable(false);
 
         Command moveIntakeUp = indexer.intakeAndScan();
 
@@ -50,6 +50,8 @@ public class DecodeAutoBlueFarV2 extends OpMode {
         Command intake3rd = indexer.intakeSlot(RobotCoefficients.SLOT3);
         Command prepareLauncher = new SequentialCommandGroup(indexer.fireSlot(RobotCoefficients.SLOT1), wait,  launcher.chargeLauncher(1));
         Command intake1stCycle = new SequentialCommandGroup(
+//                launcher.chargeLauncher(0),
+                launcher.stop(),
                 moveToCollect1stcycle, new InstantCommand(()->chassis.setMaxSpeed(.3)), wait,
                 intake1st, wait, moveToCollect1stcycle1stBall , wait, moveIntakeUp,
                 intake2nd, wait, moveToCollect1stcycle2ndBall , wait, moveIntakeUp,
@@ -57,13 +59,17 @@ public class DecodeAutoBlueFarV2 extends OpMode {
                 new InstantCommand(()->chassis.setMaxSpeed(.8)));
 
         Command launchBalls = new ParallelRaceCommandGroup(new SequentialCommandGroup(
-                turnToShoot, wait, indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), wait,
+                turnToShoot,
+                wait, indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), wait,
                 indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), wait,
                 indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
+//                launcher.stop(), new WaitCommand(1000)
+                ),
 
-        ), new SequentialCommandGroup(launcher.setRPM(5300), launcher.start())).
+                new SequentialCommandGroup(/*launcher.setRPM(5300),*/ launcher.start())).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
-        Command moveToEnd = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
+
+        Command moveToEnd = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -72 + RobotCoefficients.ROBOT_LENGTH_HALF, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
         Command firstSegment = prepareLauncher;
@@ -79,7 +85,7 @@ public class DecodeAutoBlueFarV2 extends OpMode {
 //
     @Override
     public void start() {
-        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, -72 + chassis.ROBOT_LENGTH / 2.0, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0));
+        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, -72 + RobotCoefficients.ROBOT_LENGTH_HALF, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0));
         chassis.setMaxSpeed(.9);
         //launcher.setRPM(4800);
         commandScheduler.schedule(new RepeatCommand(new SequentialCommandGroup(chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, 24, 0, AngleUnit.DEGREES, 0)).setName("DriveFar"),

@@ -32,8 +32,8 @@ public class Indexer implements Subsystem {
     private Telemetry telemetry;
     private TriggerList triggerList;
 
-    private final double SHOOTING_POS = 0;
-    private final double INTAKE_POS = 180;
+    private final double SHOOTING_POS = -30;
+    private final double INTAKE_POS = 150;
 
     private double currentSlot = 0;
 

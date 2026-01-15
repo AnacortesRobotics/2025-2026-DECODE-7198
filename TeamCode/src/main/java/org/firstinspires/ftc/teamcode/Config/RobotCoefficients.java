@@ -13,4 +13,8 @@ public class RobotCoefficients {
 //    public static final double SLOT3 = 240;
     // these are orginanal values
 
+    public static final double ROBOT_WIDTH_HALF = 15.1975 / 2.0;
+    public static final double ROBOT_LENGTH_HALF = 17.625 / 2.0;
+
+
 }
