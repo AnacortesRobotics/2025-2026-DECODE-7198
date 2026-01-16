@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -14,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
-import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @TeleOp
@@ -22,7 +21,7 @@ public class DecodeTeleOp extends OpMode {
 
     Chassis chassis;
     LinearTrajectory trajectory;
-    Launcher launcher;
+    LauncherNew launcher;
     Indexer indexer;
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
@@ -37,7 +36,7 @@ public class DecodeTeleOp extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new Launcher(hardwareMap, telemetry);
+        launcher = new LauncherNew(hardwareMap, telemetry);
         indexer = new Indexer(hardwareMap, telemetry);
         trajectory = new LinearTrajectory(telemetry, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         commandScheduler = CommandScheduler.getInstance();

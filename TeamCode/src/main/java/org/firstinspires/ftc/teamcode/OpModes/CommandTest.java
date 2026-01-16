@@ -7,13 +7,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.ParallelCommandGroup;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
-import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
-
-import javax.xml.validation.Validator;
 
 @Disabled
 @Autonomous
@@ -21,7 +18,7 @@ public class CommandTest extends OpMode {
 
     private CommandScheduler commandScheduler;
 
-    private Launcher launcher;
+    private LauncherNew launcher;
     private Chassis chassis;
     private double launcherPower = 0;
 
@@ -30,7 +27,7 @@ public class CommandTest extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new Launcher(hardwareMap, telemetry);
+        launcher = new LauncherNew(hardwareMap, telemetry);
 
         commandScheduler = CommandScheduler.getInstance();
         valueTurnover = ValueTurnover.getInstance();

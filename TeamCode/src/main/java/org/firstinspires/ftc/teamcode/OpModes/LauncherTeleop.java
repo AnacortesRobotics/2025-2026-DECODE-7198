@@ -5,22 +5,16 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
-import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
-import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
-import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
 
 @Disabled
 @TeleOp
 public class LauncherTeleop extends OpMode {
     private Chassis chassis;
     private CommandScheduler commandScheduler;
-    private Launcher launcher;
+    private LauncherNew launcher;
     private final double RPM_INCREMENTS = 50;
 
     private RevColorSensorV3 colorSensor;

@@ -50,7 +50,7 @@ public class ParallelRaceCommandGroup extends Command {
             }
         }
         if (isDone) {
-            stop(false);
+            stop(true);
             commands.clear();
         }
 

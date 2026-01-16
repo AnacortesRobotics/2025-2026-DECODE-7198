@@ -5,7 +5,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Commands.*;
+import org.firstinspires.ftc.teamcode.Commands.Command;
+import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
+import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import org.firstinspires.ftc.teamcode.Controllers.FeedforwardController;
 import org.firstinspires.ftc.teamcode.Controllers.PIDController;
 import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
@@ -19,26 +22,22 @@ public class Launcher implements Subsystem {
     private DcMotorEx rightMotor;
     private Telemetry telemetry;
     private double targetRPM = 0;
-
+    private double leftrpm = 0;
+    private double rightrpm = 0;
+    private double currentLeftRPM = 0;
+    private double currentRightRPM = 0;
     private long motorWar = 0;
 
 
     private final int TICKS_PER_REVOLUTION = 28;
     private boolean isSpinningFlag = false;
 
-    public Command init(double rpm){
-//        return new SequentialCommandGroup(new InstantCommand(()->setTargetRPM(rpm)), new InstantCommand(()->isSpinningFlag = true));
-        return new InstantCommand(()->isSpinningFlag = true);
-
-//        isSpinningFlag = true;
-//        setTargetRPM(RPM);
-    }
-
     public Launcher(HardwareMap hMap, Telemetry telemetry) {
         pid = new PIDController(PIDCoefficients.LP, PIDCoefficients.LI, PIDCoefficients.LD, false);
 //        pidL = new PIDController(PIDCoefficients.LLP,PIDCoefficients.LLI,PIDCoefficients.LLD, false);
 //        pidR = new PIDController(PIDCoefficients.LRP,PIDCoefficients.LRI,PIDCoefficients.LRD, false);
 //        feedforward = new FeedforwardController(PIDCoefficients.LKS, PIDCoefficients.LKV);
+//        pid.setInverted(true);
         leftMotor = hMap.get(DcMotorEx.class, "launcherLeft");
         leftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         rightMotor = hMap.get(DcMotorEx.class, "launcherRight");
@@ -61,21 +60,17 @@ public class Launcher implements Subsystem {
         targetRPM = rpm;
     }
     private void update(){
-        double leftrpm = getCurrentRPM(LauncherWheel.LEFT);
+        leftrpm = getCurrentRPM(LauncherWheel.LEFT);
+        rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
 //        leftMotor.setPower(pid.update(leftrpm) + feedforward.calculateWithVelocities(targetRPM));
 //        double rightrpm = getCurrentRPM(LauncherWheel.RIGHT);
 //        rightMotor.setPower(pid.update(rightrpm) + feedforward.calculateWithVelocities(targetRPM));
 
-//        leftMotor.setPower(pid.update(leftrpm));// + feedforward.calculateWithVelocities(targetRPM));
-//        rightMotor.setPower(pid.update(leftrpm));// + feedforward.calculateWithVelocities(targetRPM));
-        if (isSpinningFlag){
-            double pidVal = pid.update(leftrpm);
-            leftMotor.setPower(pidVal);
-            rightMotor.setPower(pidVal);
-        }
-        else {
-            setPower(0);
-        }
+        currentLeftRPM = pid.update(leftrpm);
+        //currentRightRPM = pid.update(rightrpm);
+        leftMotor.setPower(currentLeftRPM);// + feedforward.calculateWithVelocities(targetRPM));
+        rightMotor.setPower(currentLeftRPM);// + feedforward.calculateWithVelocities(targetRPM));
+        isSpinningFlag = true;
     }
     public enum LauncherWheel {
         LEFT,
@@ -95,17 +90,16 @@ public class Launcher implements Subsystem {
     }
     public void stopPid() {
         isSpinningFlag = false;
-//        pidL.stop();
-//        pidR.stop();
         pid.stop();
-        setPower(0);
+        rightMotor.setPower(0);
+        leftMotor.setPower(0);
     }
-    public Command start(){
+    public Command runLauncher(){
 //        return new InstantCommand(()-> setPower(1));
         return new FunctionalCommand(
-                ()->init(targetRPM),
+                ()->setTargetRPM(targetRPM),
                 this::update,
-                (interrupted)->{},
+                (interrupted)->stopPid(),
                 ()->false,
                 this).setInterruptable(true);
     }
@@ -116,17 +110,20 @@ public class Launcher implements Subsystem {
         return new InstantCommand(
                 ()->setTargetRPM(targetRPM + increment));
     }
-    public Command stop(){
-        return new SequentialCommandGroup(new InstantCommand(this::stopPid,this), new InstantCommand(()->isSpinningFlag = false));
-    }
+    /*public Command stop(){
+        return new InstantCommand(this::stopPid,this);
+    }*/
 
     public void updateTelemetry() {
         telemetry.addData("Left wheel rpm", getCurrentRPM(LauncherWheel.LEFT));
         telemetry.addData("Right wheel rpm", getCurrentRPM(LauncherWheel.RIGHT));
         telemetry.addData("Left wheel current", leftMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Right wheel current", rightMotor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("target PID:", pid.getTarget());
+        telemetry.addData("leftRPM:", leftrpm);
+        telemetry.addData("rightRPM:", rightrpm);
         telemetry.addData("targetRPM:", targetRPM);
-        telemetry.addData("PID:", pid.getTarget());
+        telemetry.addData("isSpinningFlag",isSpinningFlag);
     }
 
     public boolean areMotorsFighting() {

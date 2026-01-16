@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.OpModes.BlueAuto;
 
-import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -11,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
-import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @Autonomous
@@ -19,7 +18,7 @@ public class DecodeAutoBlueFarV2 extends OpMode {
 
     Chassis chassis;
     LinearTrajectory trajectory;
-    Launcher launcher;
+    LauncherNew launcher;
     Indexer indexer;
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
@@ -29,7 +28,7 @@ public class DecodeAutoBlueFarV2 extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new Launcher(hardwareMap, telemetry);
+        launcher = new LauncherNew(hardwareMap, telemetry);
         indexer = new Indexer(hardwareMap, telemetry);
 //        trajectory = new LinearTrajectory(telemetry, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         commandScheduler = CommandScheduler.getInstance();
@@ -66,14 +65,14 @@ public class DecodeAutoBlueFarV2 extends OpMode {
 //                launcher.stop(), new WaitCommand(1000)
                 ),
 
-                new SequentialCommandGroup(/*launcher.setRPM(5300),*/ launcher.start())).
+                new SequentialCommandGroup(launcher.setRPM(5300), launcher.start())).
                 addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
 
         Command moveToEnd = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -72 + RobotCoefficients.ROBOT_LENGTH_HALF, 48 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0)
         ).setName("Move to End");
 
         Command firstSegment = prepareLauncher;
-        Command secondSegment = new ParallelRaceCommandGroup(launchBalls);
+        Command secondSegment = launchBalls;
         Command thirdSegment = intake1stCycle;
 //        Command fourthSegment = new ParallelCommandGroup(intake2nd, wait,  moveToCollect1stcycle2ndBall, wait, moveIntakeUp);
 //        Command/*the end segment. implement at end*/ fourthSegment = new ParallelCommandGroup(new InstantCommand(()->chassis.setMaxSpeed(.8)), moveToEnd, launcher.stop());

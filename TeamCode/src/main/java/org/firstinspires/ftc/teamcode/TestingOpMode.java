@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
 //import android.hardware.Sensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorColor;
@@ -38,7 +36,7 @@ public class TestingOpMode extends OpMode {
 //    CRServo sServo;
     RevColorSensorV3 colorSensor;
     Chassis chassis;
-    Launcher launcher;
+    LauncherNew launcher;
     Indexer indexer;
     Limelight limelight;
     LimelightArtifact limelightArtifact;
@@ -53,7 +51,7 @@ public class TestingOpMode extends OpMode {
     public void init() {
         commandScheduler = CommandScheduler.getInstance();
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new Launcher(hardwareMap, telemetry);
+        launcher = new LauncherNew(hardwareMap, telemetry);
         indexer = new Indexer(hardwareMap, telemetry);
         limelightArtifact = new LimelightArtifact(hardwareMap, telemetry, 0);
         commandScheduler.init(this);
