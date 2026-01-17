@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Config;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Commands.Command;
 
 /**
  * A specialized version of {@link Pose2D} tailored for FTC field navigation.

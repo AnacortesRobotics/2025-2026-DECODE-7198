@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
+import android.graphics.HardwareRenderer;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -16,12 +19,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @Autonomous
-public class AutoTemplateBoth extends OpMode {
+public class AutoTemplateBlue extends OpMode {
 
     Chassis chassis;
     LinearTrajectory trajectory;
     Launcher launcher;
     Indexer indexer;
+    RobotPose robotPose;
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
     Boolean isRed = false;
@@ -29,10 +33,15 @@ public class AutoTemplateBoth extends OpMode {
     private static final double CHASSIS_MAX_SPEED = 0.9; // Drive Fast in Auto
     private static final double LAUNCHER_RPM = 5300; // Spin launcher up to 5300 RPM
     private static final double LAUNCHER_POWER = 1.0; // Spin Launcher Fast in Auto
+    private RobotPose setupPose;
     private RobotPose startPose;
     private RobotPose poseFarShoot;
+    private RobotPose poseMiddleShoot;
     private RobotPose moveToEnd;
-
+    private RobotPose moveToCollect1stcycle;
+    private RobotPose moveToCollect1stcycle1stBall;
+    private RobotPose moveToCollect1stcycle2ndBall;
+    private RobotPose moveToCollect1stcycle3rdBall;
     private Command driveTo(RobotPose pose, String name) {
         return chassis.driveToPosition(pose)
                 .setName(name)
@@ -41,9 +50,13 @@ public class AutoTemplateBoth extends OpMode {
 
     @Override
     public void init() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         chassis = new Chassis(hardwareMap, telemetry, true);
         launcher = new Launcher(hardwareMap, telemetry);
+        launcher.updateTelemetry();
+
         indexer = new Indexer(hardwareMap, telemetry);
+//        robotPose = new RobotPose();
 //        trajectory = new LinearTrajectory(telemetry, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         commandScheduler = CommandScheduler.getInstance();
         valueTurnover = ValueTurnover.getInstance();
@@ -52,14 +65,23 @@ public class AutoTemplateBoth extends OpMode {
 
         // 0,0 is the center of field RobotPose
         // These are currently hardcoded to Blue Side, have a RedSide and BlueSide version going forward
-        startPose = new RobotPose(-69, 25, 15.75, true);
+        setupPose = new RobotPose(-72, 24, 0, true);
+        startPose = new RobotPose(-69, 25, 16, true);
         poseFarShoot = new RobotPose(-69, 25, 16.0, true);
-        moveToEnd = new RobotPose(-72, 48, 0, true);
+        poseMiddleShoot = new RobotPose(20, 20, 43, true);
+        moveToEnd = new RobotPose(-69, 50, 0, true);
+        moveToCollect1stcycle = new RobotPose(-45, 36, 90, true);
+        moveToCollect1stcycle1stBall = moveToCollect1stcycle.plusY(5);//change to a negative number for red auto
+        moveToCollect1stcycle2ndBall = moveToCollect1stcycle.plusY(10);
+        moveToCollect1stcycle3rdBall = moveToCollect1stcycle.plusY(15);
 
-
-                commandScheduler.init(this);
+        commandScheduler.init(this);
 
         Command wait = new WaitCommand(500);
+        Command intake1st = indexer.intakeSlot(RobotCoefficients.SLOT1);
+        Command intake2nd = indexer.intakeSlot(RobotCoefficients.SLOT2);
+        Command intake3rd = indexer.intakeSlot(RobotCoefficients.SLOT3);
+        Command moveIntakeUp = indexer.intakeAndScan();
 
         // this sets power of launcher to 1.0, then calls launcher.start later? Is that why it doesn't stop?
         // removed from end of prepareLauncher
@@ -70,25 +92,46 @@ public class AutoTemplateBoth extends OpMode {
 
         //( Need to improve code by a) testing if motor has reached target RPM before shooting,
         //( and b)
-        Command launchBalls = new ParallelRaceCommandGroup(
-            new SequentialCommandGroup(
-                    new WaitCommand(1000),
-                    driveTo(poseFarShoot,"Turn To Shoot"), wait,
-                    indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), wait,
-                    indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), wait,
-                    indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
-            ), new SequentialCommandGroup(
+        Command launchBallsFar = new ParallelRaceCommandGroup(
+                new SequentialCommandGroup(
+                        new WaitCommand(1000),
+                        driveTo(poseFarShoot,"Turn To Shoot"),
+                        wait,
+                        indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
+                ), new SequentialCommandGroup(
                 launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.runLauncher())).
-            addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
+                addRequirements(chassis).setName("Launch Balls Far").setInterruptable(false);
+
+        Command launchBallsMiddle = new ParallelRaceCommandGroup(
+                new SequentialCommandGroup(
+                        new WaitCommand(1000),
+                        driveTo(poseMiddleShoot,"Turn To Shoot"), wait,
+                        indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
+                ), new SequentialCommandGroup(
+                launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.runLauncher())).
+                addRequirements(chassis).setName("Launch Balls Middle").setInterruptable(false);
 
 
+        Command intake1stCycle = new SequentialCommandGroup(
+                driveTo(moveToCollect1stcycle, "1stCycle"), new InstantCommand(()->chassis.setMaxSpeed(.3)), wait,
+                intake1st, wait, driveTo(moveToCollect1stcycle1stBall, "1st Cycle 1st Ball") , wait, moveIntakeUp,
+                intake2nd, wait, driveTo(moveToCollect1stcycle2ndBall, "1st Cycle 2nd Ball") , wait, moveIntakeUp,
+                intake3rd, wait, driveTo(moveToCollect1stcycle3rdBall, "1st Cycle 3rd Ball") , wait, moveIntakeUp,
+                new InstantCommand(()->chassis.setMaxSpeed(.8))
+        ).addRequirements(chassis).setName("Launch Balls").setInterruptable(false);
 
         Command goToEnd = new ParallelRaceCommandGroup(driveTo(moveToEnd, "Ending Move"), launcher.setRPM(0)).addRequirements(chassis).setName("Ending").setInterruptable(false);
 
         commandScheduler.schedule(
             new SequentialCommandGroup(
-                prepareLauncher,
-                launchBalls,
+//                prepareLauncher,
+                launchBallsFar,
+                intake1stCycle,
+                launchBallsMiddle,
                 goToEnd
                 /*launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.runLauncher(),*/
                 /*new InstantCommand(()->chassis.stop()*/
@@ -113,12 +156,12 @@ public class AutoTemplateBoth extends OpMode {
      */
     @Override
     public void start() {
-        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, -72 + RobotCoefficients.ROBOT_LENGTH_HALF, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0));
+//        chassis.setCurrentPose(new Pose2D(DistanceUnit.INCH, -72 + RobotCoefficients.ROBOT_LENGTH_HALF, 24 - chassis.ROBOT_WIDTH / 2, AngleUnit.DEGREES, 0));
         // Determine alliance based on field side (X < 0 is Red in standard FTC coordinates)
+        chassis.setCurrentPose(setupPose);
         Pose2D currentPose = chassis.getPose();
-        // isRed = (().getX() < 0);
-        isRed = false;
-
+        // isRed = false;
+        isRed = (currentPose.getY(DistanceUnit.INCH) < 0) ? true : false;
         // Pass the alliance state to the shared value container
         valueTurnover.setIsRed(isRed);
 

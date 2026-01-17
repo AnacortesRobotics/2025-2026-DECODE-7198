@@ -32,8 +32,8 @@ public class Indexer implements Subsystem {
     private Telemetry telemetry;
     private TriggerList triggerList;
 
-    private final double SHOOTING_POS = -30;
-    private final double INTAKE_POS = 150;
+    private final double SHOOTING_POS = 270;
+    private final double INTAKE_POS = 90;
 
     private double currentSlot = 0;
 
@@ -163,7 +163,7 @@ public class Indexer implements Subsystem {
     public Command intakeSlot(double slot) {
         return new SequentialCommandGroup(
                 new InstantCommand(()->setSpindexerTarget(INTAKE_POS, slot)),
-                new WaitCommand(1000),
+                new WaitCommand(500),
                 startIntake(),
                 new InstantCommand(()->setSpindexerPitch(.3))
         ).setInterruptable(true).setName("Intake Slot");
@@ -249,7 +249,7 @@ public class Indexer implements Subsystem {
 
     public Command pitchToLauncher() {
         return new SequentialCommandGroup(
-                new InstantCommand(()->{setSpindexerPitch(.65);}),
+                new InstantCommand(()->{setSpindexerPitch(.67);}),
                 new WaitCommand(100),
                 new InstantCommand(()->setSpindexerPitch(.55))
         );

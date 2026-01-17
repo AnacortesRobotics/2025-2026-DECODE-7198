@@ -37,8 +37,8 @@ public class DecodeAutoBlueFarV2 extends OpMode {
 
         Command wait = new WaitCommand(500);
         Command turnToShoot = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -69 + RobotCoefficients.ROBOT_LENGTH_HALF, 25 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 15.75)).setName("Turn To Shoot").setInterruptable(false);
-        Command moveToCollect1stcycle = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + RobotCoefficients.ROBOT_LENGTH_HALF, 36 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
-        Command moveToCollect1stcycle1stBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45.5 + RobotCoefficients.ROBOT_LENGTH_HALF, 42 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
+        Command moveToCollect1stcycle = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 36 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
+        Command moveToCollect1stcycle1stBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 42 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 1st Collect").setInterruptable(false);
         Command moveToCollect1stcycle2ndBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 47 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 2nd Collect").setInterruptable(false);
         Command moveToCollect1stcycle3rdBall = chassis.driveToPosition(new Pose2D(DistanceUnit.INCH, -45 + RobotCoefficients.ROBOT_LENGTH_HALF, 52 - RobotCoefficients.ROBOT_WIDTH_HALF, AngleUnit.DEGREES, 90)).setName("Move To 3rd Collect").setInterruptable(false);
 
