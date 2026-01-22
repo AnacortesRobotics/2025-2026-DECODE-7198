@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
-import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @TeleOp
@@ -21,7 +21,7 @@ public class DecodeTeleOp extends OpMode {
 
     Chassis chassis;
     LinearTrajectory trajectory;
-    LauncherNew launcher;
+    Launcher launcher;
     Indexer indexer;
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
@@ -36,7 +36,7 @@ public class DecodeTeleOp extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new LauncherNew(hardwareMap, telemetry);
+        launcher = new Launcher(hardwareMap, telemetry);
         indexer = new Indexer(hardwareMap, telemetry);
         trajectory = new LinearTrajectory(telemetry, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         commandScheduler = CommandScheduler.getInstance();
@@ -70,12 +70,14 @@ public class DecodeTeleOp extends OpMode {
                 new InstantCommand(()->chassis.setMaxSpeed(1)));
 
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.start()
+                launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.runLauncher()
         ).setInterruptable(true));
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                        launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.start()
+                        launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.runLauncher()
         ).setInterruptable(true));
-        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop().setName("Stop launcher"));
+        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(
+                new InstantCommand(
+                        ()->launcher.stopPid()).setName("Stop launcher"));
         //commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireBall());
 
         commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(

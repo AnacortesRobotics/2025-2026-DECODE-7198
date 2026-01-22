@@ -7,14 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
-import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 
 @Disabled
 @TeleOp
 public class LauncherTeleop extends OpMode {
     private Chassis chassis;
     private CommandScheduler commandScheduler;
-    private LauncherNew launcher;
+    private Launcher launcher;
     private final double RPM_INCREMENTS = 50;
 
     private RevColorSensorV3 colorSensor;

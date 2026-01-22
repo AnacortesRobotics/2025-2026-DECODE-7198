@@ -93,9 +93,7 @@ public class Launcher implements Subsystem {
         pid.stop();
         rightMotor.setPower(0);
         leftMotor.setPower(0);
-        rightrpm = 0;
-        leftrpm = 0;
-
+        targetRPM = 0;
     }
     public Command runLauncher(){
 //        return new InstantCommand(()-> setPower(1));

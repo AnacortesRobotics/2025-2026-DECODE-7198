@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import org.firstinspires.ftc.teamcode.Commands.ParallelCommandGroup;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
-import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
 
 @Disabled
@@ -18,7 +18,7 @@ public class CommandTest extends OpMode {
 
     private CommandScheduler commandScheduler;
 
-    private LauncherNew launcher;
+    private Launcher launcher;
     private Chassis chassis;
     private double launcherPower = 0;
 
@@ -27,7 +27,7 @@ public class CommandTest extends OpMode {
     @Override
     public void init() {
         chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new LauncherNew(hardwareMap, telemetry);
+        launcher = new Launcher(hardwareMap, telemetry);
 
         commandScheduler = CommandScheduler.getInstance();
         valueTurnover = ValueTurnover.getInstance();

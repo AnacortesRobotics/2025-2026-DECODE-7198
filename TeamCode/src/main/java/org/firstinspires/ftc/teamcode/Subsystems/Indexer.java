@@ -32,9 +32,6 @@ public class Indexer implements Subsystem {
     private Telemetry telemetry;
     private TriggerList triggerList;
 
-    private final double SHOOTING_POS = 270;
-    private final double INTAKE_POS = 90;
-
     private double currentSlot = 0;
 
     private int motifIndex = 0;
@@ -120,18 +117,21 @@ public class Indexer implements Subsystem {
     }
 
 
-    public void setSpindexerTarget(double angle, double slot) {
-        double target = angle + slot;
-        currentSlot = slot;
-        if (target > 360) {
-            rotationServo.setPosition((target - 360)/360);
-        } else if (target < 0) {
-            rotationServo.setPosition((target + 360)/360);
-        } else {
-            rotationServo.setPosition(target/360);
-        }
-    }
+//    public void setSpindexerTarget(double angle, double slot) {
+//        double target = angle + slot;
+//        currentSlot = slot;
+//        if (target > 360) {
+//            rotationServo.setPosition((target - 360)/360);
+//        } else if (target < 0) {
+//            rotationServo.setPosition((target + 360)/360);
+//        } else {
+//            rotationServo.setPosition(target/360);
+//        }
+//    }
 
+    public void setSpindexerTarget(double angle) {
+        rotationServo.setPosition(angle/360);
+    }
     private enum IndexState {
         NOBALLS,
         GREEN,
@@ -162,30 +162,30 @@ public class Indexer implements Subsystem {
 
     public Command intakeSlot(double slot) {
         return new SequentialCommandGroup(
-                new InstantCommand(()->setSpindexerTarget(INTAKE_POS, slot)),
+                new InstantCommand(()->setSpindexerTarget(slot)),
                 new WaitCommand(500),
                 startIntake(),
                 new InstantCommand(()->setSpindexerPitch(.3))
-        ).setInterruptable(true).setName("Intake Slot");
+        ).setInterruptable(true).setName("Intake Slot 1");
     }
 
     public Command intakeAndScan() {
         triggerList.removeTrigger(isIntakeUpIntake);
         return new SequentialCommandGroup(
-                new InstantCommand(()->setSpindexerPitch(.58)),
+                new InstantCommand(()->setSpindexerPitch(.565)),
                 new WaitCommand(750),
-                stopIntake(),
-                new FunctionalCommand(()->{}, ()->{
-                    if (getColorResult() != IndexState.NOBALLS) {
-                        assignSlot(currentSlot, getColorResult() == IndexState.GREEN);
-                    } else {
-                        setSpindexerTarget(INTAKE_POS + 5, currentSlot);
-                    }},
-                    (interrupted)->{},
-                    ()->purpleSlots.contains(currentSlot) || greenSlots.contains(currentSlot),
-                    this
-                ),
-                new InstantCommand(()->setSpindexerPitch(.55))
+                stopIntake()
+//                new FunctionalCommand(()->{}, ()->{
+//                    if (getColorResult() != IndexState.NOBALLS) {
+//                        assignSlot(currentSlot, getColorResult() == IndexState.GREEN);
+//                    } else {
+//                        setSpindexerTarget(currentSlot);
+//                    }},
+//                    (interrupted)->{},
+//                    ()->purpleSlots.contains(currentSlot) || greenSlots.contains(currentSlot),
+//                    this
+//                ),
+//                new InstantCommand(()->setSpindexerPitch(.55))
         ).setInterruptable(true).setName("Intake and scan");
     }
 
@@ -198,12 +198,12 @@ public class Indexer implements Subsystem {
     }
 
     public Command intakeOpen() {
-        if (!greenSlots.contains(RobotCoefficients.SLOT1) || !purpleSlots.contains(RobotCoefficients.SLOT1)) {
-            return intakeSlot(RobotCoefficients.SLOT1);
-        } else if ((!greenSlots.contains(RobotCoefficients.SLOT2) || !purpleSlots.contains(RobotCoefficients.SLOT2))) {
-            return intakeSlot(RobotCoefficients.SLOT2);
-        } else if ((!greenSlots.contains(RobotCoefficients.SLOT3) || !purpleSlots.contains(RobotCoefficients.SLOT3))) {
-            return intakeSlot(RobotCoefficients.SLOT3);
+        if (!greenSlots.contains(RobotCoefficients.INTAKESLOT1) || !purpleSlots.contains(RobotCoefficients.INTAKESLOT1)) {
+            return intakeSlot(RobotCoefficients.INTAKESLOT1);
+        } else if ((!greenSlots.contains(RobotCoefficients.INTAKESLOT2) || !purpleSlots.contains(RobotCoefficients.INTAKESLOT2))) {
+            return intakeSlot(RobotCoefficients.INTAKESLOT2);
+        } else if ((!greenSlots.contains(RobotCoefficients.INTAKESLOT3) || !purpleSlots.contains(RobotCoefficients.INTAKESLOT3))) {
+            return intakeSlot(RobotCoefficients.INTAKESLOT3);
         } else {
             return shootingMode();
         }
@@ -232,8 +232,8 @@ public class Indexer implements Subsystem {
     public Command fireSlot(double slot) {
         double lastCurrentSlot = currentSlot;
         return new SequentialCommandGroup(
-                new InstantCommand(()->setSpindexerPitch(.55)),
-                new InstantCommand(()->setSpindexerTarget(SHOOTING_POS, slot)),
+                new InstantCommand(()->setSpindexerPitch(.565)),
+                new InstantCommand(()->setSpindexerTarget(slot)),
                 new WaitCommand(()->{
                     if (lastCurrentSlot == slot) {
                         return 0;

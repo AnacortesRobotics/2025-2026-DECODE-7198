@@ -78,9 +78,9 @@ public class AutoTemplateBlue extends OpMode {
         commandScheduler.init(this);
 
         Command wait = new WaitCommand(500);
-        Command intake1st = indexer.intakeSlot(RobotCoefficients.SLOT1);
-        Command intake2nd = indexer.intakeSlot(RobotCoefficients.SLOT2);
-        Command intake3rd = indexer.intakeSlot(RobotCoefficients.SLOT3);
+        Command intake1st = indexer.intakeSlot(RobotCoefficients.INTAKESLOT1);
+        Command intake2nd = indexer.intakeSlot(RobotCoefficients.INTAKESLOT2);
+        Command intake3rd = indexer.intakeSlot(RobotCoefficients.INTAKESLOT3);
         Command moveIntakeUp = indexer.intakeAndScan();
 
         // this sets power of launcher to 1.0, then calls launcher.start later? Is that why it doesn't stop?
@@ -88,7 +88,7 @@ public class AutoTemplateBlue extends OpMode {
         // ...wait,  launcher.chargeLauncher(LAUNCHER_POWER)
         Command prepareLauncher = new SequentialCommandGroup(
             driveTo(startPose, "Starting Position"),
-            indexer.fireSlot(RobotCoefficients.SLOT1), wait);
+            indexer.fireSlot(RobotCoefficients.SHOOTSLOT1), wait);
 
         //( Need to improve code by a) testing if motor has reached target RPM before shooting,
         //( and b)
@@ -97,9 +97,9 @@ public class AutoTemplateBlue extends OpMode {
                         new WaitCommand(1000),
                         driveTo(poseFarShoot,"Turn To Shoot"),
                         wait,
-                        indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
-                        indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
-                        indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT3), indexer.pitchToLauncher(), wait
                 ), new SequentialCommandGroup(
                 launcher.setRPM(RobotCoefficients.LONG_RPM), launcher.runLauncher())).
                 addRequirements(chassis).setName("Launch Balls Far").setInterruptable(false);
@@ -108,9 +108,9 @@ public class AutoTemplateBlue extends OpMode {
                 new SequentialCommandGroup(
                         new WaitCommand(1000),
                         driveTo(poseMiddleShoot,"Turn To Shoot"), wait,
-                        indexer.fireSlot(RobotCoefficients.SLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
-                        indexer.fireSlot(RobotCoefficients.SLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
-                        indexer.fireSlot(RobotCoefficients.SLOT3), indexer.pitchToLauncher(), wait
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT1), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT2), indexer.pitchToLauncher(), new WaitCommand(750),
+                        indexer.fireSlot(RobotCoefficients.SHOOTSLOT3), indexer.pitchToLauncher(), wait
                 ), new SequentialCommandGroup(
                 launcher.setRPM(RobotCoefficients.SHORT_RPM), launcher.runLauncher())).
                 addRequirements(chassis).setName("Launch Balls Middle").setInterruptable(false);

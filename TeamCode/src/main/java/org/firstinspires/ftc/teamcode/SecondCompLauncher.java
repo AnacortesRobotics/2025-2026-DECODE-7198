@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.Commands.*;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Controllers.PIDController;
-import org.firstinspires.ftc.teamcode.Subsystems.LauncherNew;
+import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 
 import static java.lang.Thread.sleep;
 
@@ -74,9 +74,9 @@ public class SecondCompLauncher implements Subsystem {
         targetRPM = rpm;
     }
     private void update(){
-        double leftrpm = getCurrentRPM(LauncherNew.LauncherWheel.LEFT);
+        double leftrpm = getCurrentRPM(Launcher.LauncherWheel.LEFT);
         leftMotor.setPower(pidL.update(leftrpm));
-        double rightrpm = getCurrentRPM(LauncherNew.LauncherWheel.RIGHT);
+        double rightrpm = getCurrentRPM(Launcher.LauncherWheel.RIGHT);
         rightMotor.setPower(pidR.update(rightrpm));
         isSpinningFlag = true;
     }
@@ -84,7 +84,7 @@ public class SecondCompLauncher implements Subsystem {
         LEFT,
         RIGHT
     }
-    public double getCurrentRPM(LauncherNew.LauncherWheel wheel){
+    public double getCurrentRPM(Launcher.LauncherWheel wheel){
         switch(wheel){
             case LEFT:
                 return 60*leftMotor.getVelocity()/TICKS_PER_REVOLUTION;
