@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Supplier;
@@ -16,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.ValueTurnover;
-
+@Disabled
 @TeleOp
 public class DecodeTeleOp extends OpMode {
 

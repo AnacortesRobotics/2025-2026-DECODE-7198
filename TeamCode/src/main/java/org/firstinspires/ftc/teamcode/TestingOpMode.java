@@ -12,9 +12,7 @@ import com.qualcomm.robotcore.hardware.*;
 //import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
-import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
-import org.firstinspires.ftc.teamcode.Commands.SequentialCommandGroup;
+import org.firstinspires.ftc.teamcode.Commands.*;
 import org.firstinspires.ftc.teamcode.Config.RobotCoefficients;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Indexer;
@@ -22,143 +20,76 @@ import org.firstinspires.ftc.teamcode.Subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 
-//@Disabled
+import java.util.function.BooleanSupplier;
+
 @TeleOp
 public class TestingOpMode extends OpMode {
 
-    AnalogInput encoder;
+    private TouchSensor touch;
+    private DcMotorEx motor;
+    private RevColorSensorV3 color;
 
-    private DistanceSensor distance;
-//    private DigitalChannel touchSensor;
-//    private CommandScheduler commandScheduler;
-//    static final double MAX_POS = 1.0;
-//    static final double MIN_POS = 0.0;
-//    double  position = (MAX_POS - MIN_POS) / 2;
-//    Servo tServo;
-//    CRServo sServo;
-    RevColorSensorV3 colorSensor;
-    Chassis chassis;
-    Launcher launcher;
-    Indexer indexer;
-    CommandScheduler commandScheduler;
+    private CommandScheduler commandScheduler;
+    private TriggerList triggers;
 
-    double forward = 0;
-    double strafe = 0;
-    double rotate = 0;
-
+    private BooleanSupplier one;
+    private BooleanSupplier two;
+    private BooleanSupplier three;
+    private BooleanSupplier four;
 
     @Override
     public void init() {
         commandScheduler = CommandScheduler.getInstance();
-        chassis = new Chassis(hardwareMap, telemetry, true);
-        launcher = new Launcher(hardwareMap, telemetry);
-        indexer = new Indexer(hardwareMap, telemetry);
+        triggers = TriggerList.getInstance();
         commandScheduler.init(this);
+        touch = hardwareMap.get(TouchSensor.class, "touchSens");
+        motor = hardwareMap.get(DcMotorEx.class, "testMotorLuke");
+        color = hardwareMap.get(RevColorSensorV3.class, "colorSens");
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                indexer.intakeMode(), indexer.intakeOpen()
-        ));
-        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-                indexer.shootingMode(), indexer.fireInOrder()
-        ));
-        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT1));
-        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT2));
-        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.SECONDARY).onJustPressed(indexer.fireSlot(RobotCoefficients.SLOT3));
-        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new InstantCommand(()->launcher.setPower(1)));
-        commandScheduler.getTrigger(GamepadInput.BACK_BUTTON, GamepadIndex.SECONDARY).onJustPressed(launcher.stop());
-//        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.SECONDARY).onJustPressed(new SequentialCommandGroup(
-//                indexer.intakeMode(), indexer.fixIntake()
-//        ));
-        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.startIntake());
-        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(indexer.stopIntake());
-        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT1));
-        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT2));
-        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeSlot(RobotCoefficients.SLOT3));
-        commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(indexer.intakeAndScan());
+        one = ()->touch.isPressed();
+        two = ()->motor.getCurrentPosition() > 400;
 
-//        commandScheduler.getTrigger(GamepadInput.START_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new SequentialCommandGroup(launcher.setRPM(1000), launcher.start()));
+        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()-> {
+            TriggerList triggerList;
+            triggerList = TriggerList.getInstance();
+            triggerList.addTrigger(one).onJustPressed(new InstantCommand(()->motor.setPower(.4)));
+        }));
+        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()-> {
+            TriggerList triggerList;
+            triggerList = TriggerList.getInstance();
+            triggerList.removeTrigger(one);
+        }));
 
-        commandScheduler.setDefaultCommands(new InstantCommand(()->
-                chassis.mecanumDrive(forward, strafe, rotate)));
-//
-//        touchSensor = hardwareMap.get(DigitalChannel.class, "touchSens");
-//
-//        touchSensor.setMode(DigitalChannel.Mode.INPUT);
-//
-//
-//        distance = hardwareMap.get(DistanceSensor.class, "distanceSens");
-//        tServo = hardwareMap.get(Servo.class, "testServo");
-//        sServo = hardwareMap.get(CRServo.class, "crServo");
+        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()-> {
+            TriggerList triggerList;
+            triggerList = TriggerList.getInstance();
+            triggerList.addTrigger(two).onJustPressed(new InstantCommand(()->motor.setPower(-.4)));
+        }));
+        commandScheduler.getTrigger(GamepadInput.DPAD_UP, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()-> {
+            TriggerList triggerList;
+            triggerList = TriggerList.getInstance();
+            triggerList.removeTrigger(two);
+        }));
+
+        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->motor.setPower(-.4)));
+        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->motor.setPower(0)));
+
+
 
     }
 
     @Override
     public void loop() {
-
-        chassis.updateOdo();
-
-        forward = gamepad1.left_stick_y;
-        strafe = -gamepad1.left_stick_x;
-        rotate = -gamepad1.right_stick_x;
-
         commandScheduler.run();
-
-        launcher.updateTelemetry();
-        indexer.updateTelemetry();
         commandScheduler.updateTelemetry();
-
-//        telemetry.addData("pos", encoder.getVoltage() * (360 / encoder.getMaxVoltage()));
-
-//
-//        if (!touchSensor.getState()) {
-//            telemetry.addData("Button", "PRESSED");
-//        } else {
-//            telemetry.addData("Button", "NOT PRESSED");
-//        }
-//        if (gamepad1.aWasPressed()){
-//            sServo.setPower(.5);
-//        }
-//        if (gamepad1.bWasPressed()){
-//            sServo.setPower(-.5);
-//        }
-
-//        final float[] hsvValues = new float[3];
-//
-//        NormalizedRGBA colors = colorSensor.getNormalizedColors();
-//
-//        Color.colorToHSV(colors.toColor(), hsvValues);
-//
-//        if (colors.green>0.015 && colors.green> colors.blue){
-//            sServo.setPower((colors.green - colors.blue)*10);
-//        }
-//        else if(colors.blue>0.015 && colors.blue> colors.green){
-//            sServo.setPower(-(colors.blue - colors.green)*10);
-//        }
-//        else {
-//            sServo.setPower(0);
-//        }
-//
-//        telemetry.addLine()
-//                .addData("Red", colorSensor.red())
-//                .addData("Green", colorSensor.green())
-//                .addData("Blue", colorSensor.blue());
-//
-//        telemetry.addLine()
-//                .addData("Hue", "%.3f", hsvValues[0])
-//                .addData("Saturation", "%.3f", hsvValues[1])
-//                .addData("Value", "%.3f", hsvValues[2]);
-//        telemetry.addData("Alpha", "%.3f", colors.alpha);
-//
-//        telemetry.addData("servo position", tServo.getPosition());
-//        telemetry.addData("distance", distance.getDistance(DistanceUnit.CM));
-//        commandScheduler.run();
-//        commandScheduler.updateTelemetry();
-
-
+        telemetry.addData("touch", touch.isPressed());
+        telemetry.addData("pos", motor.getCurrentPosition());
     }
 
+    @Override
     public void stop() {
-        commandScheduler.endAll();
+        triggers.stop();
     }
 
 }

@@ -32,6 +32,10 @@ public class TriggerList {
         return lastCommandTriggers;
     }
 
+    public Trigger getTrigger(BooleanSupplier condition) {
+        return commandTriggers.get(condition);
+    }
+
     public boolean getLastState(BooleanSupplier key) {
         for (BooleanSupplier condition : lastCommandTriggers.keySet()) {
             if (condition == key) {
@@ -81,6 +85,13 @@ public class TriggerList {
         lastCommandTriggers.clear();
         for (BooleanSupplier condition : commandTriggers.keySet()) {
             lastCommandTriggers.put(condition, condition.getAsBoolean());
+        }
+    }
+
+    public void copyTriggerList(LinkedHashMap<BooleanSupplier, Boolean> list) {
+        lastCommandTriggers.clear();
+        for (BooleanSupplier condition : list.keySet()) {
+            lastCommandTriggers.put(condition, list.get(condition));
         }
     }
 

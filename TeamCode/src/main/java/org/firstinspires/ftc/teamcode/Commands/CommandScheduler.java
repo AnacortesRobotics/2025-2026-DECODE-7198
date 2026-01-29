@@ -54,6 +54,7 @@ public class CommandScheduler {
     private LinkedHashMap<GamepadInput, Trigger> gamepad1Triggers = new LinkedHashMap<>();
     private LinkedHashMap<GamepadInput, Trigger> gamepad2Triggers = new LinkedHashMap<>();
     private TriggerList triggerList;
+    private LinkedHashMap<BooleanSupplier, Boolean> commandTriggers = new LinkedHashMap<>();
 
     private Set<Command> defaultCommands = new LinkedHashSet<>();
     private Set<Command> activeCommands = new LinkedHashSet<>();
@@ -151,6 +152,10 @@ public class CommandScheduler {
 
         gamepad1 = opMode.gamepad1;
         gamepad2 = opMode.gamepad2;
+        commandTriggers.clear();
+        for (BooleanSupplier condition : triggerList.getTriggers().keySet()) {
+            commandTriggers.put(condition, condition.getAsBoolean());
+        }
 
         Iterator<Command> commandIterator = scheduledCommands.iterator();
         while (commandIterator.hasNext()) {
@@ -206,9 +211,10 @@ public class CommandScheduler {
             endCommand(command, false);
         }
         triggerList.setRunning(true);
-        for (BooleanSupplier condition : triggerList.getTriggers().keySet()) {
-            Trigger trigger = triggerList.getTriggers().get(condition);
-            InputState inputState = new InputState(condition.getAsBoolean(), triggerList.getLastState(condition));
+        for (BooleanSupplier condition : commandTriggers.keySet()) {
+            if (triggerList.getTrigger(condition) == null) continue;
+            Trigger trigger = triggerList.getTrigger(condition);
+            InputState inputState = new InputState(commandTriggers.get(condition), triggerList.getLastState(condition));
             if (inputState.justPressed()) {
                 schedule(trigger.getOnJustPressed());
             }
@@ -258,10 +264,9 @@ public class CommandScheduler {
         }
         gamepad1.copy(lastGamepad1);
         gamepad2.copy(lastGamepad2);
-        triggerList.copyTriggerList();
+        triggerList.copyTriggerList(commandTriggers);
+
     }
-
-
 
     private Set<Command> getActiveConflicts(Command command) {
         Set<Command> conflictingCommands = new HashSet<>();
