@@ -87,6 +87,7 @@ public class LinearTrajectory {
         Pose2D lookaheadPoint = new Pose2D(DistanceUnit.INCH, closestX + currentPoseX,
                 closestY + currentPoseY,
                 AngleUnit.DEGREES,
+                isLastPoint() ? targetPoint.getHeading(AngleUnit.DEGREES) :
                 lerp(currentPoint.getHeading(AngleUnit.DEGREES), targetPoint.getHeading(AngleUnit.DEGREES),
                         Math.max(Math.min(1 - closestDist / dist, 1), 0)));
 

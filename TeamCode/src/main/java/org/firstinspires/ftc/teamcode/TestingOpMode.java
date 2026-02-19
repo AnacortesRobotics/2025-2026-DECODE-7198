@@ -8,8 +8,10 @@ import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorColor;
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
 import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.SequentialCommandGroup;
@@ -21,26 +23,28 @@ import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver.Artboard;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
+import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class TestingOpMode extends OpMode {
 
     //private AnalogInput encoder;
-    private GoBildaPrismDriver prism;
-
-    private List<Double> green = new ArrayList<>();
-    private List<Double> purple = new ArrayList<>();
+//    private GoBildaPrismDriver prism;
+//
+//    private List<Double> green = new ArrayList<>();
+//    private List<Double> purple = new ArrayList<>();
 
 
 //    private DistanceSensor distance;
 //    private DigitalChannel touchSensor;
     private CommandScheduler commandScheduler;
+    private Chassis chassis;
 //    static final double MAX_POS = 1.0;
 //    static final double MIN_POS = 0.0;
 //    double  position = (MAX_POS - MIN_POS) / 2;
@@ -53,17 +57,18 @@ public class TestingOpMode extends OpMode {
     public void init() {
 
 //        encoder = hardwareMap.get(AnalogInput.class, "indexerPOS");
-        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+//        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+        chassis = new Chassis(hardwareMap, telemetry, true);
         commandScheduler = CommandScheduler.getInstance();
         commandScheduler.init(this);
-        prism.clearAllAnimations();
-        prism.setStripLength(12);
-        prism.setTargetFPS(60);
-        PrismAnimations.Blink anim1 = new PrismAnimations.Blink();
-        anim1.setPrimaryColor(Color.RED);
-        anim1.setSecondaryColor(Color.TRANSPARENT);
-        anim1.setBrightness(100);
-        anim1.setPeriod(500, TimeUnit.MILLISECONDS);
+//        prism.clearAllAnimations();
+//        prism.setStripLength(12);
+//        prism.setTargetFPS(60);
+//        PrismAnimations.Blink anim1 = new PrismAnimations.Blink();
+//        anim1.setPrimaryColor(Color.RED);
+//        anim1.setSecondaryColor(Color.TRANSPARENT);
+//        anim1.setBrightness(100);
+//        anim1.setPeriod(500, TimeUnit.MILLISECONDS);
 //        PrismAnimations.DroidScan anim2 = new PrismAnimations.DroidScan(Color.PURPLE);
 //        anim2.setPrimaryColor(Color.PURPLE);
 //        anim2.setSecondaryColor(Color.RED);
@@ -74,40 +79,40 @@ public class TestingOpMode extends OpMode {
 //        anim2.setStartIndex(0);
 //        anim2.setStopIndex(11);
 //        anim2.setDroidScanStyle(PrismAnimations.DroidScan.DroidScanStyle.BACK_TAIL);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_9, anim1);
+//        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_9, anim1);
 //        prism.insertAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, anim2);
 //        prism.setDefaultBootArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
 //        prism.enableDefaultBootArtboard(false);
-
-        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{green.add(0.0);
-                prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(Color.GREEN, 0, 1));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{green.add(120.0);
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_3, new PrismAnimations.Solid(Color.GREEN, 2, 3));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{green.add(240.0);
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_4, new PrismAnimations.Solid(Color.GREEN, 4, 5));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{purple.add(0.0);
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(new Color(160,0,255), 0, 1));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{purple.add(120.0);
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_3, new PrismAnimations.Solid(new Color(160,0,255), 2, 3));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()->{purple.add(240.0);
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_4, new PrismAnimations.Solid(new Color(160,0,255), 4, 5));}
-        ));
-        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
-                ()-> {
-                    purple.add(240.0);
-                    prism.loadAnimationsFromArtboard(Artboard.ARTBOARD_7);
-                }));
+//
+//        commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{green.add(0.0);
+//                prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(Color.GREEN, 0, 1));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{green.add(120.0);
+//                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_3, new PrismAnimations.Solid(Color.GREEN, 2, 3));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{green.add(240.0);
+//                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_4, new PrismAnimations.Solid(Color.GREEN, 4, 5));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.DPAD_DOWN, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{purple.add(0.0);
+//                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_2, new PrismAnimations.Solid(new Color(160,0,255), 0, 1));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.DPAD_RIGHT, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{purple.add(120.0);
+//                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_3, new PrismAnimations.Solid(new Color(160,0,255), 2, 3));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.DPAD_LEFT, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()->{purple.add(240.0);
+//                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_4, new PrismAnimations.Solid(new Color(160,0,255), 4, 5));}
+//        ));
+//        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(
+//                ()-> {
+//                    purple.add(240.0);
+//                    prism.loadAnimationsFromArtboard(Artboard.ARTBOARD_7);
+//                }));
 
 
 //
@@ -121,13 +126,20 @@ public class TestingOpMode extends OpMode {
 //        tServo = hardwareMap.get(Servo.class, "testServo");
 //        sServo = hardwareMap.get(CRServo.class, "crServo");
 
+        commandScheduler.schedule(chassis.driveTrajectory(
+                new Pose2D(DistanceUnit.INCH, 50, 12, AngleUnit.DEGREES, 0),
+                new Pose2D(DistanceUnit.INCH, 60, 60, AngleUnit.DEGREES, 90),
+                new Pose2D(DistanceUnit.INCH, 58, 50, AngleUnit.DEGREES, 160),
+                new Pose2D(DistanceUnit.INCH, 46 ,50, AngleUnit.DEGREES, 220)
+        ));
+
     }
 
     @Override
     public void loop() {
-        prism.updateAllAnimations();
-        telemetry.addData("Number of leds", prism.getNumberOfLEDs());
-        prism.saveCurrentAnimationsToArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_7);
+//        prism.updateAllAnimations();
+//        telemetry.addData("Number of leds", prism.getNumberOfLEDs());
+//        prism.saveCurrentAnimationsToArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_7);
 
 //        telemetry.addData("pos", encoder.getVoltage() * (360 / encoder.getMaxVoltage()));
 //
@@ -171,9 +183,17 @@ public class TestingOpMode extends OpMode {
 //
 //        telemetry.addData("servo position", tServo.getPosition());
 //        telemetry.addData("distance", distance.getDistance(DistanceUnit.CM));
+        chassis.updateOdo();
         commandScheduler.run();
-//        commandScheduler.updateTelemetry();
-
+        commandScheduler.updateTelemetry();
+        chassis.updateTelemetry();
 
     }
+
+    @Override
+    public void stop() {
+        chassis.stop();
+        commandScheduler.endAll();
+    }
+
 }
