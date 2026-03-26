@@ -258,8 +258,8 @@ public class CommandScheduler {
                 schedule(trigger.getOnReleased());
             }
         }
-        gamepad1.copy(lastGamepad1);
-        gamepad2.copy(lastGamepad2);
+        lastGamepad1.copy(gamepad1);
+        lastGamepad1.copy(gamepad2);
         triggerList.copyTriggerList();
     }
 

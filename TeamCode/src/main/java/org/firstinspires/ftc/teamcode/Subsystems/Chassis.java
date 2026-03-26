@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Commands.Command;
 import org.firstinspires.ftc.teamcode.Commands.FunctionalCommand;
+import org.firstinspires.ftc.teamcode.Commands.InstantCommand;
 import org.firstinspires.ftc.teamcode.Commands.Subsystem;
 import org.firstinspires.ftc.teamcode.Config.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.Controllers.LinearTrajectory;
@@ -223,19 +224,20 @@ public class Chassis implements Subsystem {
     public Command autoTurn(DoubleSupplier forward, DoubleSupplier strafe, double targetAngles) {
         return new FunctionalCommand(()->{},
                 ()->{
-                    double targetAngle = targetAngles;
-                    if (targetAngle - odo.getHeading(AngleUnit.DEGREES) > 180) {
-                        targetAngle -= 360;
-                    } else if (targetAngle - odo.getHeading(AngleUnit.DEGREES) < -180) {
-                        targetAngle += 360;
-                    }
-                    pidRotate.setTarget(targetAngle);
-                    mecanumDrive(forward.getAsDouble(), strafe.getAsDouble(),
-                            pidRotate.update(odo.getHeading(AngleUnit.DEGREES)));
-                },
+            double targetAngle = targetAngles;
+            if (targetAngle /*- odo.getHeading(AngleUnit.DEGREES)*/ > 180) {
+                targetAngle -= 360;
+            } else if (targetAngle /*- odo.getHeading(AngleUnit.DEGREES)*/ < -180) {
+                targetAngle += 360;
+            }
+            pidRotate.setTarget(targetAngle);
+            mecanumDrive(forward.getAsDouble(), strafe.getAsDouble(),
+                    pidRotate.update(odo.getHeading(AngleUnit.DEGREES)));
+            },
                 (interrupted)->{},
                 ()->false,
-                this).setInterruptable(true);
+                this
+        ).setInterruptable(true);
     }
 
     public void stop() {
@@ -264,5 +266,4 @@ public class Chassis implements Subsystem {
         telemetry.addData("Max speed", maxSpeed);
         trajectory.updateTelemetry();
     }
-
 }
