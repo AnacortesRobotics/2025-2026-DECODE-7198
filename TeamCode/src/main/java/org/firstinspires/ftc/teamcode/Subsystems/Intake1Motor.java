@@ -17,13 +17,9 @@ public class Intake1Motor implements Subsystem {
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
-    public Command intakeIn(){
-        return new InstantCommand(()->intake.setPower(.25));
-    }
+    public Command intakeIn(){return new InstantCommand(()->intake.setPower(.4));}
 
-    public Command intakeOut(){
-        return new InstantCommand(()->intake.setPower(-.25));
-    }
+    public Command intakeOut(){return new InstantCommand(()->intake.setPower(-.4));}
 
     public Command intakeStop(){
         return new InstantCommand(()->intake.setPower(0));

@@ -1,18 +1,21 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Commands.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 
+import static java.lang.Runtime.getRuntime;
 
 
 public class Limelight implements Subsystem {
@@ -24,10 +27,29 @@ public class Limelight implements Subsystem {
     private List<LLResultTypes.ColorResult> colorTargets;
     private double targetX;
     private double targetY;
+    private double targetArea;
+    public double colorTargetX;
+    public double colorTargetY;
+    public double colorTargetArea;
     boolean greenTracking;
     Chassis chassis;
+    TriggerList triggerList;
 
-    public Limelight(HardwareMap hwM, Telemetry telemetry, Chassis chassis) {
+    // ---------------------- turning variables trial -----------------------------
+    private double kP = 0.002;
+    private double error = 0;
+    private double lastError = 0;
+    private double goalX = 0; //offset
+    private double angleTolerance = 0.4;
+    private double kD = 0.0001;
+    private double curTime = 0;
+    private double lastTime = 0;
+    private double[] stepSizes = {1.0, 0.1, 0.001, 0.0001};
+    private ElapsedTime runtime;
+
+    public Limelight(HardwareMap hwM, Telemetry telemetry, Chassis chassis, TriggerList triggerList) {
+        runtime = new ElapsedTime();
+        runtime.reset();
         this.chassis = chassis;
         this.telemetry = telemetry;
         limelight = hwM.get(Limelight3A.class, "limelight");
@@ -35,7 +57,6 @@ public class Limelight implements Subsystem {
         limelight.pipelineSwitch(1);
         limelight.start();
 //        pitchServo = hwM.get(Servo.class, "limelightServo");
-
     }
 
     private LLResultTypes.FiducialResult getAprilTag(int aprilTag) {
@@ -52,25 +73,32 @@ public class Limelight implements Subsystem {
     }
 
     public double getAngleOffSet() {
-        LLResultTypes.ColorResult tag = getColorTrackingResults();
-        if(tag == null && !result.isValid()) return 0.0;
-        return -tag.getTargetXDegrees();
+        if (chassis.getPose().getHeading(AngleUnit.DEGREES) < 0){
+            return chassis.getPose().getHeading(AngleUnit.DEGREES) + colorTargetX;
+        } else return chassis.getPose().getHeading(AngleUnit.DEGREES) - Math.abs(colorTargetX);
     }
 
     public void update(){
         result = limelight.getLatestResult();
         colorTargets = result.getColorResults();
-        updateTelemetry();
+        targetX = 50;//-result.getTx();
+        targetY = 50;//-result.getTy();
+        targetArea = result.getTa();
+        for (LLResultTypes.ColorResult colorTarget : colorTargets) {
+            colorTargetX = colorTarget.getTargetXDegrees();
+            colorTargetY = colorTarget.getTargetYDegrees();
+            colorTargetArea = colorTarget.getTargetArea();
+        }
     }
-    public void updateTelemetry(){
-        if (result != null && result.isValid()) {//check if it sees something
-            targetX = result.getTx(); // How far left or right the target is (degrees)
-            targetY = result.getTy(); // How far up or down the target is (degrees)
-            double ta = result.getTa(); // How big the target looks (0%-100% of the image)
 
+    public void updateTelemetry(){
+        if (result != null && result.isValid()) {
             telemetry.addData("Target X", targetX);
             telemetry.addData("Target Y", targetY);
-            telemetry.addData("Target Area", ta);
+            telemetry.addData("Target Area", targetArea);
+            telemetry.addData("Color Target X", colorTargetX);
+            telemetry.addData("Color Target Y", colorTargetY);
+            telemetry.addData("Color Target Area", colorTargetArea);
         } else {
             telemetry.addData("Limelight", "No Targets");
         }
@@ -120,22 +148,41 @@ public class Limelight implements Subsystem {
             if (colorTargets.size() > 0) {
                 return colorTargets.get(0);
             }
-            else return null;//colorTargets.get(0);
+            else return null;
         }
         return null;
     }
 
-    public Command turnToArtifact() {
-        telemetry.addData("angle offset", chassis.getPose().getHeading(AngleUnit.DEGREES));
-        return chassis.autoTurn(
-                    () -> 0, () -> 0,
-                    /*chassis.getPose().getHeading(AngleUnit.DEGREES) +*/ targetX).setInterruptable(true);
+//    public Command turnToArtifact() {
+//        BooleanSupplier bbb = () -> true;
+//
+//        return new InstantCommand(()->
+//                    chassis.getPose().getHeading(AngleUnit.DEGREES) + targetX)''
+//        );
+//    }
+
+    public void turnToTest() {
+        if (result != null){
+            error = goalX - targetX;
+            if (Math.abs(error) < angleTolerance){
+                //rotate = 0;
+            }else {
+                double pTerm = error + kP;
+//                curTime = getRuntime();
+                double dT = curTime - lastTime;
+                double dTerm = ((error - lastError)/dT) * kD;
+//                rotate = Range.clip(pTerm + dTerm, -0.4, 0.4);
+                lastError = error;
+                lastTime = curTime;
+            }
+        } else {
+//            lastTime = getRuntime();
+            lastError = 0;
+        }
     }
 
     public Command setPipeline(int pipeline){
         return new InstantCommand(()->limelight.pipelineSwitch(pipeline));
         //1 is green and 2 is purple
     }
-
-
 }

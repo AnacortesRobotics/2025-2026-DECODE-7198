@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.*;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadInput;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler.GamepadIndex;
 
+import java.util.function.BooleanSupplier;
+
 //@Disabled
 @TeleOp
 public class TestingOpMode extends OpMode {
@@ -28,6 +30,7 @@ public class TestingOpMode extends OpMode {
     AnalogInput encoder;
 
     private DistanceSensor distance;
+    private TriggerList triggerList;
 //    private DigitalChannel touchSensor;
 //    private CommandScheduler commandScheduler;
 //    static final double MAX_POS = 1.0;
@@ -38,10 +41,11 @@ public class TestingOpMode extends OpMode {
     RevColorSensorV3 colorSensor;
     Chassis chassis;
 
-    Limelight limelight;
+    VisionLimelight limelight;
     LimelightArtifact limelightArtifact;
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
+    double heading = 0;
 
     double forward = 0;
     double strafe = 0;
@@ -49,6 +53,10 @@ public class TestingOpMode extends OpMode {
 
     boolean isRed = true;
 
+    private double currentHeading() {
+        this.heading = -chassis.getPose().getHeading(AngleUnit.DEGREES);
+        return this.heading;
+    }
 
     @Override
     public void init() {
@@ -58,33 +66,21 @@ public class TestingOpMode extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         valueTurnover = ValueTurnover.getInstance();
         isRed = valueTurnover.getIsRed();
-        limelight = new Limelight(hardwareMap, telemetry, chassis);
+        triggerList = TriggerList.getInstance();
+        limelight = new VisionLimelight(hardwareMap, telemetry);
         limelight.update();
         chassis.updateOdo();
-        Command startTracking = limelight.turnToArtifact();
+        Command startTracking = chassis.autoTurn(()->0.0, ()->0.0, currentHeading() - limelight.targetX);
 
-        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(limelight.setPipeline(1)); // green
-        commandScheduler.getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(limelight.setPipeline(2)); // purple
 
+        commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(() -> limelight.setTarget(VisionLimelight.VisionTarget.GREEN_ARTIFACT))); // green
+        commandScheduler.getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(() -> limelight.setTarget(VisionLimelight.VisionTarget.PURPLE_ARTIFACT))); // purple
 
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(startTracking.cancel());
+
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onPressed(startTracking);
-
-
-
         commandScheduler.setDefaultCommands(new InstantCommand(()->
                 chassis.mecanumDrive(forward, strafe, rotate), chassis));
-
-//
-//        touchSensor = hardwareMap.get(DigitalChannel.class, "touchSens");
-//
-//        touchSensor.setMode(DigitalChannel.Mode.INPUT);
-//
-//
-//        distance = hardwareMap.get(DistanceSensor.class, "distanceSens");
-//        tServo = hardwareMap.get(Servo.class, "testServo");
-//        sServo = hardwareMap.get(CRServo.class, "crServo");
-
     }
 
     @Override
@@ -95,27 +91,21 @@ public class TestingOpMode extends OpMode {
 
     @Override
     public void loop() {
-
         limelight.update();
+        limelight.updateTelemetry();
         chassis.updateOdo();
 
         forward = -gamepad1.left_stick_y;
         strafe = gamepad1.left_stick_x;
         rotate = -gamepad1.right_stick_x;
-        telemetry.addData("angle offset", chassis.getPose().getHeading(AngleUnit.DEGREES));
+//        telemetry.addData("angle offset", limelight.getAngleOffSet());
 
         commandScheduler.run();
-
-//        launcher.updateTelemetry();
-//        indexer.updateTelemetry();
         commandScheduler.updateTelemetry();
-
     }
 
     public void stop() {
         commandScheduler.endAll();
-//        valueTurnover.setCurrentPos(chassis.getPose());
-//        valueTurnover.setIsRed(false);
     }
 
 }
