@@ -17,7 +17,7 @@ public class VisionLimelight implements Subsystem {
         PURPLE_ARTIFACT
     }
     private final Limelight3A limelight; // can only declare one limelight
-    private Telemetry telemetry;
+    private final Telemetry telemetry;
     private int pipeline;
     private LLResult result;
     private List<LLResultTypes.ColorResult> colorTargets;
@@ -33,10 +33,10 @@ public class VisionLimelight implements Subsystem {
 
     public VisionLimelight(HardwareMap hwM, Telemetry telemetry) {
         this.telemetry = telemetry;
-        this.limelight = hwM.get(Limelight3A.class, "limelight");
-        this.limelight.setPollRateHz(100);
-        this.limelight.pipelineSwitch(1);
-        this.limelight.start();
+        limelight = hwM.get(Limelight3A.class, "limelight");
+        limelight.setPollRateHz(100);
+        limelight.pipelineSwitch(1);
+        limelight.start();
     }
 
     public void setTarget(VisionTarget target) {
@@ -47,50 +47,50 @@ public class VisionLimelight implements Subsystem {
     }
 
     public VisionTarget getTarget() {
-        return this.target;
+        return target;
     }
 
     private void switchColorTracking(){
-        if (this.target == VisionTarget.GREEN_ARTIFACT){
+        if (target == VisionTarget.GREEN_ARTIFACT){
             setPipeline(1);
             trackingGreen = true;
-        } else if(this.target == VisionTarget.PURPLE_ARTIFACT){
+        } else if(target == VisionTarget.PURPLE_ARTIFACT){
             setPipeline(2);
             trackingGreen = false;
         }
     }
 
     public void update() {// Automatically fetch new data every loop
-        this.result = limelight.getLatestResult();
-        this.colorTargets = result.getColorResults();
-        this.targetX = this.result.getTx();
-        this.targetY = this.result.getTy();
-        this.targetArea = this.result.getTa();
+        result = limelight.getLatestResult();
+        colorTargets = result.getColorResults();
+        targetX = -result.getTx();
+        targetY = result.getTy();
+        targetArea = result.getTa();
         for (LLResultTypes.ColorResult colorTarget : colorTargets) {
-            this.colorTargetX = colorTarget.getTargetXDegrees();
-            this.colorTargetY = colorTarget.getTargetYDegrees();
-            this.colorTargetArea = colorTarget.getTargetArea();
+            colorTargetX = colorTarget.getTargetXDegrees();
+            colorTargetY = colorTarget.getTargetYDegrees();
+            colorTargetArea = colorTarget.getTargetArea();
         }
     }
 
     public void updateTelemetry() {
-        telemetry.addData("Pipeline", this.limelight.getStatus().getPipelineIndex());
-        if (this.result != null && this.result.isValid()) {
-            telemetry.addData("Target X", this.targetX);
-            telemetry.addData("Target Y", this.targetY);
-            telemetry.addData("Target Area", this.targetArea);
-            telemetry.addData("Color Target X", this.colorTargetX);
-            telemetry.addData("Color Target Y", this.colorTargetY);
-            telemetry.addData("Color Target Area", this.colorTargetArea);
+//        telemetry.addData("Pipeline", limelight.getStatus().getPipelineIndex());
+        if (result != null && result.isValid()) {
+            telemetry.addData("Target X", targetX);
+            telemetry.addData("Target Y", targetY);
+            telemetry.addData("Target Area", targetArea);
+            telemetry.addData("Color Target X", colorTargetX);
+            telemetry.addData("Color Target Y", colorTargetY);
+            telemetry.addData("Color Target Area", colorTargetArea);
             telemetry.addData("tracking Green ?",trackingGreen);
         } else {
-            telemetry.addData("Limelight", "No Targets");
+            telemetry.addLine("Limelight No Targets");
         }
     }
 
     public void setPipeline(int pipeline) { // when using put in an instant command
-        this.limelight.pipelineSwitch(pipeline);
-    }        //1 is green and 2 is purple
+        limelight.pipelineSwitch(pipeline);
+    }   //1 is green and 2 is purple #3 for pollen
 
 
     public boolean targetDetected() {
@@ -102,6 +102,6 @@ public class VisionLimelight implements Subsystem {
     }
 
     public Pose3D getBotPose() {
-        return targetDetected() ? this.result.getBotpose() : null;
+        return targetDetected() ? result.getBotpose() : null;
     }
 }

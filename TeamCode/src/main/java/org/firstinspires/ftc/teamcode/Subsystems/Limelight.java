@@ -93,6 +93,7 @@ public class Limelight implements Subsystem {
 
     public void updateTelemetry(){
         if (result != null && result.isValid()) {
+            telemetry.addData("string length", colorTargets);
             telemetry.addData("Target X", targetX);
             telemetry.addData("Target Y", targetY);
             telemetry.addData("Target Area", targetArea);
@@ -104,7 +105,7 @@ public class Limelight implements Subsystem {
         }
     }
 
-    public void setServoPosition(double position) {
+    private void setServoPosition(double position) {
         pitchServo.setPosition(position);
     }
 
@@ -128,7 +129,7 @@ public class Limelight implements Subsystem {
         }
     }
 
-    public void updateShootingMode(boolean shootingMode) {
+    public void updateShootingMode(boolean shootingMode) { // looking up or down (shooting = up)
         isShootingMode = shootingMode;
         shootingMode();
     }
@@ -148,7 +149,6 @@ public class Limelight implements Subsystem {
             if (colorTargets.size() > 0) {
                 return colorTargets.get(0);
             }
-            else return null;
         }
         return null;
     }
@@ -166,7 +166,7 @@ public class Limelight implements Subsystem {
             error = goalX - targetX;
             if (Math.abs(error) < angleTolerance){
                 //rotate = 0;
-            }else {
+            } else {
                 double pTerm = error + kP;
 //                curTime = getRuntime();
                 double dT = curTime - lastTime;

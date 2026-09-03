@@ -46,16 +46,23 @@ public class TestingOpMode extends OpMode {
     CommandScheduler commandScheduler;
     ValueTurnover valueTurnover;
     double heading = 0;
+    double xAngle;
 
     double forward = 0;
     double strafe = 0;
     double rotate = 0;
+    double rotateCount = 1;
 
     boolean isRed = true;
 
     private double currentHeading() {
-        this.heading = -chassis.getPose().getHeading(AngleUnit.DEGREES);
-        return this.heading;
+        heading = chassis.getPose().getHeading(AngleUnit.DEGREES);
+        return heading;
+    }
+
+    private double lLTargetX(){
+        xAngle = limelight.targetX;
+        return xAngle;
     }
 
     @Override
@@ -69,16 +76,30 @@ public class TestingOpMode extends OpMode {
         triggerList = TriggerList.getInstance();
         limelight = new VisionLimelight(hardwareMap, telemetry);
         limelight.update();
+        limelight.setTarget(VisionLimelight.VisionTarget.GREEN_ARTIFACT);
         chassis.updateOdo();
-        Command startTracking = chassis.autoTurn(()->0.0, ()->0.0, currentHeading() - limelight.targetX);
+        Command startTracking = chassis.autoTurn(()->forward, ()->strafe, ()->currentHeading() + lLTargetX());
+        Command startTurning = chassis.autoTurn(()->0.0, ()->0.0, currentHeading() + 90);
 
 
         commandScheduler.getTrigger(GamepadInput.RIGHT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(() -> limelight.setTarget(VisionLimelight.VisionTarget.GREEN_ARTIFACT))); // green
         commandScheduler.getTrigger(GamepadInput.LEFT_BUMPER, GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(() -> limelight.setTarget(VisionLimelight.VisionTarget.PURPLE_ARTIFACT))); // purple
 
         commandScheduler.getTrigger(GamepadInput.B_BUTTON, GamepadIndex.PRIMARY).onJustPressed(startTracking.cancel());
-
         commandScheduler.getTrigger(GamepadInput.A_BUTTON, GamepadIndex.PRIMARY).onPressed(startTracking);
+
+        commandScheduler.getTrigger(GamepadInput.Y_BUTTON, GamepadIndex.PRIMARY).onJustPressed(//coach did this whole command
+                new SequentialCommandGroup(
+                        new InstantCommand(()->rotate=lLTargetX()/10),
+                        new InstantCommand(()->chassis.mecanumDrive(0.0, 0.0, rotate), chassis),
+                        new WaitCommand(150),
+                        new InstantCommand(()->limelight.update()),
+                        new InstantCommand(()->rotateCount+=1),
+                        new InstantCommand(()->rotate=2*lLTargetX()/10),
+                        new InstantCommand(()->chassis.mecanumDrive(0.0, 0.0, rotate), chassis)
+                ));
+        // commandScheduler.getTrigger(GamepadInput.X_BUTTON, GamepadIndex.PRIMARY).onJustPressed(startTurning.cancel());
+
         commandScheduler.setDefaultCommands(new InstantCommand(()->
                 chassis.mecanumDrive(forward, strafe, rotate), chassis));
     }

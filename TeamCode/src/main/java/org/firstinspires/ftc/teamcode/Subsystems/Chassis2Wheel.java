@@ -49,11 +49,28 @@ public class Chassis2Wheel implements Subsystem {
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
+    public void chassis2WheelDrive(double forward, double rotate){
+        if (forward>.4){
+            forward=0.4;
+        }
+        else if (forward<-.4){
+            forward=-0.4;
+        }
+        if (rotate>.3){
+            rotate=0.3;
+        }
+        else if (rotate<-.3){
+            rotate=-0.3;
+        }
+        leftDrive.setPower(forward+rotate);
+        rightDrive.setPower(forward-rotate);
+    }
     public void move(double forwards, double turns){
         if (forwards > 0.1 || forwards < -0.1 ) {
             drive(forwards);
         }
-        else if(turns > 0.1 || turns < -0.1){
+        else stopDrive();
+        if(turns > 0.1 || turns < -0.1){
             turn(turns);
         }
         else stopDrive();

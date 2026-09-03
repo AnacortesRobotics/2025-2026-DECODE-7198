@@ -221,6 +221,24 @@ public class Chassis implements Subsystem {
             this).setInterruptable(true);
     }
 
+    public Command autoRotate(DoubleSupplier forward, DoubleSupplier strafe, double targetAngles) {
+        return new FunctionalCommand(()->{},
+                ()->{
+                    double targetAngle = targetAngles;
+                    /*if (targetAngle - odo.getHeading(AngleUnit.DEGREES) > 180) {
+                        targetAngle -= 360;
+                    } else if (targetAngle - odo.getHeading(AngleUnit.DEGREES) < -180) {
+                        targetAngle += 360;
+                    }*/
+                    pidRotate.setTarget(targetAngle);
+                    mecanumDriveFieldCentric(forward.getAsDouble(), strafe.getAsDouble(),
+                            pidRotate.update(odo.getHeading(AngleUnit.DEGREES)));
+                },
+                (interrupted)->{},
+                ()->false,
+                this).setInterruptable(true);
+    }
+
     public Command autoTurn(DoubleSupplier forward, DoubleSupplier strafe, double targetAngles) {
         return new FunctionalCommand(()->{},
                 ()->{
@@ -239,6 +257,26 @@ public class Chassis implements Subsystem {
                 this
         ).setInterruptable(true);
     }
+
+    public Command autoTurn(DoubleSupplier forward, DoubleSupplier strafe, DoubleSupplier targetAngles) {
+        return new FunctionalCommand(()->{},
+                ()->{
+                    double targetAngle = targetAngles.getAsDouble();
+                    if (targetAngle /*- odo.getHeading(AngleUnit.DEGREES)*/ > 180) {
+                        targetAngle -= 360;
+                    } else if (targetAngle /*- odo.getHeading(AngleUnit.DEGREES)*/ < -180) {
+                        targetAngle += 360;
+                    }
+                    pidRotate.setTarget(targetAngle);
+                    mecanumDrive(forward.getAsDouble(), strafe.getAsDouble(),
+                            pidRotate.update(odo.getHeading(AngleUnit.DEGREES)));
+                },
+                (interrupted)->{},
+                ()->false,
+                this
+        ).setInterruptable(true);
+    }
+
 
     public void stop() {
         pidForward.stop();

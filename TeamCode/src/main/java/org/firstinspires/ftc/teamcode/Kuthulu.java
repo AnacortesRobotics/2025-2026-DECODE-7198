@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.widget.Button;
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Commands.CommandScheduler;
@@ -11,7 +8,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Chassis2Wheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake1Motor;
 
 @TeleOp
-public class BabyBot extends OpMode {
+public class Kuthulu extends OpMode {
 //    DcMotor leftdrive;
 //    DcMotor rightdrive;
     CommandScheduler commandScheduler;
@@ -30,7 +27,7 @@ public class BabyBot extends OpMode {
 //        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 //        telemetry.update();
 
-        commandScheduler.setDefaultCommands(new InstantCommand(()->chassis2Wheel.move(-gamepad1.left_stick_y, gamepad1.right_stick_x)));
+        commandScheduler.setDefaultCommands(new InstantCommand(()-> chassis2Wheel.chassis2WheelDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x)));
         commandScheduler.getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(intake1Motor.intakeIn());
         commandScheduler.getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(intake1Motor.intakeOut());
         commandScheduler.getTrigger(CommandScheduler.GamepadInput.X_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(intake1Motor.intakeStop());

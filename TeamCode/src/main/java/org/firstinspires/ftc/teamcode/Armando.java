@@ -5,7 +5,6 @@ import android.widget.Button;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 // import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,16 +14,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 // import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Commands.*;
-import org.firstinspires.ftc.teamcode.Subsystems.Chassis;
 import org.firstinspires.ftc.teamcode.Subsystems.Chassis2Wheel;
-
-import static com.sun.tools.doclint.Entity.or;
 // import org.firstinspires.ftc.teamcode.Subsystems.LimelightArtifact;
 // import org.firstinspires.inspection.GamepadInspection;
 
-@TeleOp(name = "MiniBot")
+@TeleOp(name = "Armando")
 
-public class MiniBot extends OpMode {
+public class Armando extends OpMode {
     DcMotorEx leftdrive;
     DcMotorEx rightdrive;
 
@@ -46,12 +42,12 @@ public class MiniBot extends OpMode {
 
 
     private Command armUp(){
-        return new  InstantCommand(()->arm.setPower(.65));
+        return new  InstantCommand(()->arm.setPower(.75));
 
 
     }
     private Command armDown(){
-        return new SequentialCommandGroup(new InstantCommand(()->arm.setPower(-.2)), new WaitCommand(150), new InstantCommand(()->arm.setPower(0)));
+        return new SequentialCommandGroup(new InstantCommand(()->arm.setPower(-.3)), new WaitCommand(150), new InstantCommand(()->arm.setPower(0)));
     }
     private Command armStop(){
         return new InstantCommand(()-> arm.setPower(0));
@@ -72,12 +68,14 @@ public class MiniBot extends OpMode {
     private Command pickUpStuff(){
         return new SequentialCommandGroup(
                 graberIn(),
-                new WaitCommand(300),
+                new WaitCommand(500),
                 armUp(),
                 waitUntil(),
                 new WaitCommand(200),
                 armStop(),
-                graberOut()
+                graberOut(),
+                new WaitCommand(500),
+                armDown()
         );
     }
 
@@ -97,11 +95,11 @@ public class MiniBot extends OpMode {
         telemetry.update();
         chassis2Wheel = new Chassis2Wheel(hardwareMap, telemetry);
 
-        commandScheduler.setDefaultCommands(new InstantCommand(()->chassis2Wheel.move(-gamepad1.left_stick_y, gamepad1.right_stick_x)));
+        commandScheduler.setDefaultCommands(new InstantCommand(()-> chassis2Wheel.chassis2WheelDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x)));
         commandScheduler.getTrigger(CommandScheduler.GamepadInput.B_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onPressed(armDown());
         commandScheduler.getTrigger(CommandScheduler.GamepadInput.X_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onPressed(armStop());
-        commandScheduler.getTrigger(CommandScheduler.GamepadInput.RIGHT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->grabServo.setPosition(.5)));
-        commandScheduler.getTrigger(CommandScheduler.GamepadInput.LEFT_BUMPER, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(pickUpStuff());
+        commandScheduler.getTrigger(CommandScheduler.GamepadInput.X_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(new InstantCommand(()->grabServo.setPosition(.5)));
+        commandScheduler.getTrigger(CommandScheduler.GamepadInput.A_BUTTON, CommandScheduler.GamepadIndex.PRIMARY).onJustPressed(pickUpStuff());
     }
 
     @Override
